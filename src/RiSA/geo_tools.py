@@ -21,9 +21,8 @@ from osgeo import gdal
 from osgeo import ogr
 
 from .libraries import *
-from .hidro_tools import *
+from .hydro_tools import *
 from .frequency_analysis import *
-sys.path.insert(0, os.getcwd())
 
 # Functions
 
