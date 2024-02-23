@@ -5,7 +5,6 @@ This module is used for frequency analysis of hydrological data.
 # Libraries
 
 from .libraries import *
-sys.path.insert(0, os.getcwd())
 
 # Functions
 
