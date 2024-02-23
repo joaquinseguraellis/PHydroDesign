@@ -5,7 +5,6 @@ This module is made to process rainfall data.
 # Libraries
 
 from .libraries import *
-sys.path.insert(0, os.getcwd())
 
 # Functions
 
