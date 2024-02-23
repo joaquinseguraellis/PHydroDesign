@@ -13,8 +13,6 @@ from pathlib import Path
 from dateutil.relativedelta import relativedelta
 import sklearn.metrics
 
-pip.main(['install', '--upgrade', '--force-reinstall', '-i', 'https://test.pypi.org/simple/ hidro-UNC-joaquin.segura.ellis'])
-
 try:
     import numpy as np
     import numpy.ma as ma
