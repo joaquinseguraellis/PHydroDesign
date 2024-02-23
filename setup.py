@@ -7,7 +7,6 @@ setup(
     author_email="joaquin.segura.ellis@mi.unc.edu.ar",
     url="https://github.com/JoaquinSeguElli/pydrodesign",
     description="Tools for Hydrology Design.",
-    packages=find_packages(),
     classifiers=[
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
