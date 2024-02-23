@@ -5,8 +5,7 @@ This module is made to process rainfall data.
 # Libraries
 
 from .libraries import *
-from .hidro_tools import *
-sys.path.insert(0, os.getcwd())
+from .hydro_tools import *
 
 # Functions
 
