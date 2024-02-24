@@ -366,6 +366,22 @@ class Rainfall_Indices:
                 sorted_max.append(np.apply_along_axis(_1D, 0, data_))
                 time_.append(time[i])
             self.result[f'{p}_{n}_sorted_rx1day'] = {'time' : np.array(time_), 'data' : np.array(sorted_max)}
+    
+    def save(self, bin_path):
+        """
+        
+        """
+        with open(bin_path, 'wb') as f:
+            pickle.dump(self.__dict__, f)
+    
+    def load(self, bin_path):
+        """
+        
+        """
+        with open(bin_path, 'rb') as f:
+            data_dict = pickle.load(f)
+        for k in data_dict.keys():
+            exec(f'self.{k} = data_dict[{k}]')
 
 class Rain_Gauge(Rainfall_Indices):
     """

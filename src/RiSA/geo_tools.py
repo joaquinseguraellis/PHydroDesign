@@ -378,9 +378,10 @@ def get_imerg_grid(
         if dt_lims[0] is not None:
             imerg_grid = imerg_grid[imerg_time >= dt_lims[0]]
             imerg_time = imerg_time[imerg_time >= dt_lims[0]]
+        imerg_grid = imerg_grid[:, :10, :12]
         imerg_grid = Rainfall_Indices(imerg_time, imerg_grid, start_month=1)
-        imerg_grid.lon = lon
-        imerg_grid.lat = lat
+        imerg_grid.lon = lon[:10]
+        imerg_grid.lat = lat[:12]
         if analyze:
             imerg_grid.rxDday_calc(1)
             imerg_grid.sorted_max_calc()
@@ -425,11 +426,13 @@ def get_imerg_grid(
             )
             imerg_grid.result[k_]['pmp'] = mean + std * imerg_grid.result[k_]['phi_pmp']
         if save:
-            with open(bin_path, 'wb') as f:
-                pickle.dump(imerg_grid, f)
+            imerg_grid.save(bin_path)
+            # with open(bin_path, 'wb') as f:
+            #     pickle.dump(imerg_grid, f)
     else:
-        with open(bin_path, 'rb') as f:
-            imerg_grid = pickle.load(f)
+        imerg_grid = Rainfall_Indices.load(bin_path)
+        # with open(bin_path, 'rb') as f:
+        #     imerg_grid = pickle.load(f)
     return imerg_grid
 
 def kriging_interp_to_grid(
