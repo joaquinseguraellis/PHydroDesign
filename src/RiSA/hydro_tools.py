@@ -391,7 +391,7 @@ class Rainfall_Indices:
         with open(bin_path, 'rb') as f:
             data_dict = pickle.load(f)
         for k in data_dict.keys():
-            exec(f'self.{k} = data_dict[{k}]')
+            exec(f'self.{k} = data_dict[\'{k}\']')
 
 class Rain_Gauge(Rainfall_Indices):
     """
