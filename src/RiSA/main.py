@@ -5,4 +5,4 @@ def f():
     return np.random.random((231, 350, 3, 48))
 
 def get():
-    return bin_file(files('RiSA.output').joinpath('prueba'), f)
+    return bin_file(files('RiSA.data').joinpath('prueba'), f)
