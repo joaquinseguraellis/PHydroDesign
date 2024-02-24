@@ -606,6 +606,7 @@ def map_imerg_test(
 def map_imerg_prec(
         bbox, lon_grid, lat_grid, prec, save_path,
         bounds=None, shp_path=None, elevation_mask=None,
+        cb_label='Precipitación (mm/día)',
     ):
     """
     
@@ -660,7 +661,7 @@ def map_imerg_prec(
             spacing='uniform', ticks=bounds[1:-1], **kw
         )
         cb.ax.tick_params(labelsize=my_map.fs)
-        cb.set_label('Precipitación (mm/día)', fontsize=my_map.fs)
+        cb.set_label(cb_label, fontsize=my_map.fs)
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
 
