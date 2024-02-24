@@ -430,7 +430,8 @@ def get_imerg_grid(
             # with open(bin_path, 'wb') as f:
             #     pickle.dump(imerg_grid, f)
     else:
-        imerg_grid = Rainfall_Indices.load(bin_path)
+        imerg_grid = Rainfall_Indices()
+        imerg_grid.load(bin_path)
         # with open(bin_path, 'rb') as f:
         #     imerg_grid = pickle.load(f)
     return imerg_grid

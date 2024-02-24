@@ -75,12 +75,17 @@ class Rainfall_Indices:
         year and just works for yearly period. It is 7 (July) for 
         default.
     """
-    def __init__(self, time, data, axis=0, period=['Y'], start_month=7):
-        self.time = time
-        if axis != 0:
-            self.data = self.reshape_data(data, axis)
-        else:
-            self.data = data
+    def __init__(
+            self, time=None, data=None,
+            axis: int=0, period: list=['Y'], start_month=7,
+        ):
+        if time is not None:
+            self.time = time
+        if data is not None:
+            if axis != 0:
+                self.data = self.reshape_data(data, axis)
+            else:
+                self.data = data
         self.period = period
         self.start_month = start_month
         self.result = dict()
@@ -106,7 +111,8 @@ class Rainfall_Indices:
     @staticmethod
     def trim_data_yearly(time, data, start_month=7):
         """
-        This method trim the begining and end of the data to the hidrological year with start_month specified.
+        This method trim the begining and end of the data
+        to the hidrological year with start_month specified.
         """
         inicial_datetime = time[0]
         final_datetime = time[-1] + datetime.timedelta(days=1)
@@ -144,7 +150,11 @@ class Rainfall_Indices:
             time_ = np.array([datetime.datetime(year, start_month, 1) for year in years])
         data_ = [
             data[
-                np.where(time == datetime.datetime(year, start_month, 1))[0][0]:np.where(time == datetime.datetime(year + 1, start_month, 1))[0][0]
+                np.where(
+                    time == datetime.datetime(year, start_month, 1)
+                )[0][0]:np.where(
+                    time == datetime.datetime(year + 1, start_month, 1)
+                )[0][0]
             ] for year in years[:index_year]
         ]
         data_ = data_ + [data[np.where(time == datetime.datetime(years[index_year], start_month, 1))[0][0]:]]
