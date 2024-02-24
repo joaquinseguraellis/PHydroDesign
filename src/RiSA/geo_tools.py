@@ -410,7 +410,7 @@ def get_imerg_grid(
                 (
                     imerg_grid.result[k_][k_wo].shape[1],
                     imerg_grid.result[k_][k_wo].shape[2],
-                    3, 5,
+                    3, len(T),
                 ), np.nan
             )
             for i in range(imerg_grid.result[k_][k_wo].shape[1]):
