@@ -28,7 +28,7 @@ from .frequency_analysis import *
 
 def cut(
         data, x, y, bbox,
-    ):
+):
     """
     Cut a numpy.array to a bbox.
 
@@ -95,7 +95,7 @@ def cut(
 
 def etopo(
         lon_new, lat_new, earth_data_path, engine='netcdf4',
-    ):
+):
     """
     Return topography for a define longitud and latitud
     """
@@ -142,7 +142,7 @@ def etopo(
 
 def search_loc(
         lons_, lats_, lons, lats,
-    ):
+):
     """
     Search for nearest coordinates from lons and lats to lons_ and lats_.
     Return a numpy.array with the index where to find those coordinates.
@@ -157,7 +157,7 @@ def search_loc(
 
 def inside_bbox(
         bbox, y, x,
-    ):
+):
     """
     Wheter or not a point is inside a square bbox limits.
 
@@ -175,7 +175,7 @@ def inside_bbox(
 
 def open_Catalini(
         path,
-    ):
+):
     """
     
     """
@@ -219,7 +219,7 @@ def open_stations_Catalini(
 
 def get_imerg_dataset(
         path, bbox,
-    ):
+):
     """
     
     """
@@ -250,7 +250,7 @@ def get_imerg_dataset(
 
 def get_imerg_daily_sum(
         file_paths, bbox,
-    ):
+):
     """
     
     """
@@ -295,7 +295,7 @@ def get_imerg_grid(
         imerg_path, bin_path, T: list,
         dt_lims: list=[None, None],
         save: bool=True, analyze: bool=True,
-    ):
+):
     """
     This function opens imerg grid data, applies frequency analysis and saves it to a binary file.
     """
@@ -433,7 +433,7 @@ def get_imerg_grid(
 
 def kriging_interp_to_grid(
         x, y, z, x_grid, y_grid, variogram_model,
-    ):
+):
     """
     This function interpolates using Universal Kriging
     """
@@ -444,7 +444,7 @@ def kriging_interp_to_grid(
 
 def shp_mask(
         raster, transform, shp_path,
-    ):
+):
     """
     Applies a mask to raster data based in a shape file.
     """
@@ -467,7 +467,7 @@ def shp_mask(
 def get_kriging_prec(
         lon, lat, lon_grid, lat_grid, prec,
         shp_path=None, elevation_mask=None,
-    ):
+):
     """
     Get Kriging interpolation and masks it to elevation mask and shape file.
     """
@@ -486,6 +486,23 @@ def get_kriging_prec(
         return np.ma.masked_array(prec_interp, elevation_mask)
     else:
         return prec_interp
+    
+def fill_interp(
+        lon, lat, data, mask=None,
+):
+    """
+    
+    """
+    if mask is not None:
+        data[mask] = np.nan
+    X, Y = np.meshgrid(lon, lat)
+    points = np.array([X.flatten(), Y.flatten()]).T
+    data = data.flatten()
+    points = points[~np.isnan(data)]
+    data = data[~np.isnan(data)]
+    return scipy.interpolate.griddata(
+        points, data, (X, Y), method='linear',
+    )
 
 # Classes
 
@@ -610,7 +627,6 @@ class IDW_Grid_Interpolation:
         
         """
         self.w = self.d**-power
-        self.sum_w = np.sum(self.w)
 
     def get_u(self, u):
         """
@@ -619,14 +635,15 @@ class IDW_Grid_Interpolation:
         if np.any(self.tolerance):
             return u[self.tolerance][0]
         else:
-            return np.sum(self.w * u) / self.sum_w
+            w = copy.deepcopy(self.w)
+            w[np.isnan(u)] = np.nan
+            return np.nansum(w * u) / np.nansum(w)
     
     def interp(self, grid_data, tolerance=0.001, axes=None):
         """
         
         """
         self.tolerance = self.d <= tolerance
-        lims = None
         if axes is not None:
             grid_data = np.transpose(grid_data, axes)
         return np.array([self.get_u(_) for _ in grid_data])
