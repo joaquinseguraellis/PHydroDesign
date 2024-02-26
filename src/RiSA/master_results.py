@@ -18,6 +18,49 @@ COUNTRIES_SHP_PATH = Path(
 
 # Functions
 
+def tests_examples(
+        save_path,
+):
+    """
+    
+    """
+    if not os.path.exists(save_path):
+        N = 100
+        xlabel = ['(a)', '(b)', '(c)']
+        sin = 20 * np.sin(2 * np.pi * np.arange(N) / N)
+        data1 = [
+            sp.lognorm.rvs(0.3, 0, 70, N) + sin,
+            np.concatenate([
+                sp.lognorm.rvs(0.3, 0, 130, int(N/2)),
+                sp.lognorm.rvs(0.3, 0, 60, int(N/2)),
+            ]),
+            sp.lognorm.rvs(0.3, 0, 70, N) + np.arange(N),
+        ]
+        data2 = [
+            sin + 70,
+            np.concatenate([
+                np.full((int(N/2),), 130),
+                np.full((int(N/2),), 60),
+            ]),
+            np.arange(N) + 70,
+        ]
+        fig = plt.figure(figsize=(8, 3), dpi=300)
+        axs = [fig.add_subplot(1, 3, i) for i in range(1, 4)]
+        for i, ax in enumerate(axs):
+            ax.plot(
+                data1[i], lw=0.8, c='black',
+            )
+            ax.plot(
+                data2[i], lw=1.0, c='red',
+            )
+            ax.grid(alpha=0.5)
+            ax.set_axis_off()
+        fig.text(0.225, 0, xlabel[0], c='black')
+        fig.text(0.500, 0, xlabel[1], c='black')
+        fig.text(0.775, 0, xlabel[2], c='black')
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close()
+
 def map_station_institution(
         bbox, lon, lat, institutions, save_path,
     ):
