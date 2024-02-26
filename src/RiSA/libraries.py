@@ -108,7 +108,6 @@ except:
 
 PROVINCES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_1_states_provinces.shp')
 COUNTRIES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_0_countries.shp')
-IMERG_PATH = pkg_resources.resource_filename('RiSA', 'data/imerg.risa')
 ARG_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/argentina.shp')
 TOPO_PATH = pkg_resources.resource_filename('RiSA', 'data/elev.topo')
 

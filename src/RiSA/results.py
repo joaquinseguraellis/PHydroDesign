@@ -42,7 +42,9 @@ def get_result(
         'in_Arg': loc_validation(lon, lat, shp_path),
         'T': T,
     }
-    data_dict = open_results(IMERG_PATH)
+    data_dict = open_results(
+        pkg_resources.resource_filename('RiSA', f'data/imerg_{product}.risa'),
+    )
     if product == 'Final':
         power = 3
     else:
