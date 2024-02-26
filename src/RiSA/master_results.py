@@ -7,15 +7,6 @@ This module is used for frequency analysis of hydrological data.
 from .libraries import *
 from .geo_tools import *
 
-PROVINCES_SHP_PATH = Path(
-    Path(os.getcwd()).parent, 'EarthData', 'natural_earth_data',
-    '10m_cultural', 'ne_10m_admin_1_states_provinces.shp',
-)
-COUNTRIES_SHP_PATH = Path(
-    Path(os.getcwd()).parent, 'EarthData', 'natural_earth_data',
-    '10m_cultural', 'ne_10m_admin_0_countries.shp',
-)
-
 # Functions
 
 def tests_examples(
