@@ -4,6 +4,8 @@ This module is made to process rainfall data.
 
 # Libraries
 
+from dateutil.relativedelta import relativedelta
+
 from .libraries import *
 
 # Functions

@@ -4,6 +4,9 @@ This module is used for frequency analysis of hydrological data.
 
 # Libraries
 
+import scipy
+import matplotlib
+
 from .libraries import *
 from .geo_tools import *
 

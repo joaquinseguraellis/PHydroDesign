@@ -4,6 +4,11 @@ This module is used for frequency analysis of hydrological data.
 
 # Libraries
 
+import pymannkendall
+import pyhomogeneity
+
+from collections import namedtuple
+
 from .libraries import *
 
 # Functions

@@ -7,18 +7,24 @@ This module contains functions and clases for managing geographically distribute
 import pykrige
 import shapefile
 import rasterio
+import h5py
+import requests
+import scipy
 
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import shapely.geometry
 import rasterio.mask
 import rasterio.transform
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import cartopy.io.img_tiles
+import xarray as xr
 
 from global_land_mask import globe
 from osgeo import gdal
 from osgeo import ogr
+from tqdm import tqdm
 
 from .libraries import *
 from .hydro_tools import *

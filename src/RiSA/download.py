@@ -4,6 +4,12 @@ This module is used for frequency analysis of hydrological data.
 
 # Libraries
 
+import requests
+
+import pandas as pd
+
+from subprocess import Popen
+
 from .libraries import *
 
 # Functions
