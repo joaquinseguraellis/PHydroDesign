@@ -6,10 +6,11 @@ This module is used for frequency analysis of hydrological data.
 
 import pymannkendall
 import pyhomogeneity
+import scipy.stats
 
 from collections import namedtuple
 
-from .libraries import *
+from .basics import *
 
 # Functions
 
@@ -18,7 +19,8 @@ def weibull_distribution(data):
     Find Weibull's distribution frequencies for data from a numpy.array.
 
     Interagency Advisory Committee on Water Data. (1981).
-    Guidelines For Determining Flood Flow Frequency, Bulletin #17B. (U. G. Survey, Ed.) Reston, Virginia: Office of Water Data Coordination.
+    Guidelines For Determining Flood Flow Frequency, Bulletin #17B.
+    (U. G. Survey, Ed.) Reston, Virginia: Office of Water Data Coordination.
     Obtenido de https://water.usgs.gov/osw/bulletin17b/dl_flow.pdf
     """
     data = data[~np.isnan(data)]
@@ -29,7 +31,8 @@ def weibull_distribution(data):
 
 def chi2(obs, cdf, n_params):
     """
-    Chi Square Goodness of Fit test. "obs" and "est" are the observed and estimated values.
+    Chi Square Goodness of Fit test. "obs" and "est" are
+    the observed and estimated values.
     It returns the statistic and the p-value of the test.
     "obs" and "est" must be numpy.array both.
     """
@@ -44,93 +47,77 @@ def chi2(obs, cdf, n_params):
     else:
         n_min = np.floor(obs.shape[0] ** 2)
         n_ = np.ceil(obs.shape[0] / 5)
-    f_obs = np.histogram(obs, bins=n_, range=(np.min(obs, axis=0) * 0.99, np.max(obs, axis=0) * 1.01))
+    f_obs = np.histogram(
+        obs, bins=n_,
+        range=(np.min(obs, axis=0) * 0.99, np.max(obs, axis=0) * 1.01),
+    )
     f_est = np.array(
         [cdf([f_obs[1][1]])[0]] + \
-        [cdf([f_obs[1][i+1]])[0] - cdf([f_obs[1][i]])[0] for i in range(1, f_obs[0].shape[0] - 1)] + \
-        [1 - cdf([f_obs[1][-2]])[0]]
+        [
+            cdf([f_obs[1][i+1]])[0] - cdf([f_obs[1][i]])[0]
+            for i in range(1, f_obs[0].shape[0] - 1)
+        ] + [1 - cdf([f_obs[1][-2]])[0]]
     )
     while np.any(f_est == 0) and n_ > n_min:
         n_    = n_ - 1
-        f_obs = np.histogram(obs, bins=n_, range=(np.min(obs, axis=0) * 0.99, np.max(obs, axis=0) * 1.01))
+        f_obs = np.histogram(
+            obs, bins=n_,
+            range=(np.min(obs, axis=0) * 0.99, np.max(obs, axis=0) * 1.01),
+        )
         f_est = np.array(
             [cdf([f_obs[1][1]])[0]] + \
-            [cdf([f_obs[1][i+1]])[0] - cdf([f_obs[1][i]])[0] for i in range(1, f_obs[0].shape[0] - 1)] + \
-            [1 - cdf([f_obs[1][-2]])[0]]
+            [
+                cdf([f_obs[1][i+1]])[0] - cdf([f_obs[1][i]])[0]
+                for i in range(1, f_obs[0].shape[0] - 1)
+            ] + [1 - cdf([f_obs[1][-2]])[0]]
         )
-    return sp.chisquare(f_obs[0], f_est * len(obs), ddof=n_params)[1]
-
-def root_mean_squared_error(obs, est):
-    """
-    Return the Root of the Mean Squared Error between "obs" and "est", which are the observed and estimated data.
-    """
-    est = est[~np.isnan(obs)]
-    obs = obs[~np.isnan(obs)]
-    obs = obs[~np.isnan(est)]
-    est = est[~np.isnan(est)]
-    return sklearn.metrics.mean_squared_error(obs, est, squared=False)
-
-def percentage_error(obs, est, _abs=True):
-    """
-    Return the Percentage Error between "obs" and "est", which are the observed and estimated data.
-    """
-    if _abs:
-        return 100 * np.abs((est - obs) / obs)
-    elif ~_abs:
-        return 100 * (est - obs) / obs
-    else:
-        raise ValueError('"_abs" must be True or False.')
-
-def nash_coeficient(obs, est):
-    """
-    Return de Nash-Sutcliffe model efficiency coefficient. First the original, second the normalized and last the modified for extreme values.
-    """
-    NSE = 1 - np.nansum((obs - est)**2) / np.nansum((obs - np.nanmean(obs))**2)
-    return [
-        NSE,
-        1 / (2 - NSE),
-        1 - np.nansum(np.absolute(obs - est)) / np.nansum(np.absolute(obs - np.nanmean(obs))),
-    ]
-
-def minimum_lenght(arr, lenght):
-    return arr[~np.isnan(arr)].shape[0] >= lenght
+    return scipy.stats.chisquare(
+        f_obs[0], f_est * len(obs), ddof=n_params
+    )[1]
 
 def frequency_analysis(indices, replace=None):
+    key_ = 'Y_rx1day'
+    out_k = 'outliers'
     # Outliers
+    out_f = Statictical_Tests.outliers_bulletin17b
     if replace is not None:
-        indices.result['Y_rx1day']['outliers'] = Statictical_Tests.outliers_bulletin17b(indices.result['Y_3_sorted_rx1day']['data'], replace=replace)
+        indices.result[key_][out_k] = out_f(
+            indices.result['Y_3_sorted_rx1day']['data'], replace=replace,
+        )
     else:
-        indices.result['Y_rx1day']['outliers'] = Statictical_Tests.outliers_bulletin17b(indices.result['Y_rx1day']['data'])
-    indices.result['Y_rx1day']['outliers']['replace'] = replace
-    w_out = indices.result['Y_rx1day']['outliers']['data_without_outliers'][-1]
+        indices.result[key_][out_k] = out_f(indices.result[key_]['data'])
+    indices.result[key_][out_k]['replace'] = replace
+    w_out = indices.result[key_][out_k]['data_without_outliers'][-1]
     # Statistical Tests
     tests = Statictical_Tests(w_out, axis=0)
     tests.calculate()
-    indices.result['Y_rx1day']['data_outliers_tests'] = tests.result
-    tests = Statictical_Tests(indices.result['Y_rx1day']['data'], axis=0)
+    indices.result[key_]['data_outliers_tests'] = tests.result
+    tests = Statictical_Tests(indices.result[key_]['data'], axis=0)
     tests.calculate()
-    indices.result['Y_rx1day']['data_tests'] = tests.result
+    indices.result[key_]['data_tests'] = tests.result
     # Frecuency Analysis
-    indices.result['Y_rx1day']['lognorm'] = LogNormal_MV(w_out)
+    indices.result[key_]['lognorm'] = LogNormal_MV(w_out)
     # Probable Maximum Precipitation
-    mean = np.nanmean(indices.result['Y_rx1day']['data'])
-    std = np.nanstd(indices.result['Y_rx1day']['data'])
-    indices.result['Y_rx1day']['data_mean'] = mean
-    indices.result['Y_rx1day']['data_std'] = std
-    indices.result['Y_rx1day']['phi_pmp'] = 5.2253 * np.exp(1.958 * std / mean)
-    indices.result['Y_rx1day']['pmp'] = mean + std * indices.result['Y_rx1day']['phi_pmp']
+    mean = np.nanmean(indices.result[key_]['data'])
+    std = np.nanstd(indices.result[key_]['data'])
+    indices.result[key_]['data_mean'] = mean
+    indices.result[key_]['data_std'] = std
+    indices.result[key_]['phi_pmp'] = 5.2253 * np.exp(1.958 * std / mean)
+    indices.result[key_]['pmp'] = mean + std * indices.result[key_]['phi_pmp']
     return indices
 
 def freq_conditions(indices, w_out=True):
+    key_ = 'Y_rx1day'
+    out_k = 'outliers'
     if w_out:
-        data = indices.result['Y_rx1day']['outliers']['data_without_outliers'][-1]
+        data = indices.result[key_][out_k]['data_without_outliers'][-1]
         key_ = 'data_outliers_tests'
     else:
-        data = indices.result['Y_rx1day']['data']
+        data = indices.result[key_]['data']
         key_ = 'data_tests'
-    iWW = int(indices.result['Y_rx1day'][key_]['iWW']['index']) >= 3
-    hPE = int(indices.result['Y_rx1day'][key_]['hPE']['index']) >= 3
-    tMK = int(indices.result['Y_rx1day'][key_]['tMK']['index'][0]) == 2
+    iWW = int(indices.result[key_][key_]['iWW']['index']) >= 3
+    hPE = int(indices.result[key_][key_]['hPE']['index']) >= 3
+    tMK = int(indices.result[key_][key_]['tMK']['index'][0]) == 2
     return minimum_lenght(data, 14) * iWW * hPE * tMK
 
 # Classes
@@ -140,13 +127,18 @@ class Statictical_Tests:
     Runs a list of tests to a ndarray along the given axis.
     Inputs:
         - data: numpy.array.
-        - without_outliers: default is True. If False is set, next tests are executed without taking out the outliers.
-        - iAN: default is True for independence_wald_wolfowitz to be applied.
+        - without_outliers: default is True. If False is set,
+            next tests are executed without taking out the outliers.
+        - iAN: default is True for independence_wald_wolfowitz
+            to be applied.
         - tMK: default is True for trend_mann_kendall to be applied.
         - sWI: default is True for signed_rank_wilcoxon to be applied.
         - sWI: default is True for homogeneity_pettitt to be applied.
     """
-    def __init__(self, data, axis=0, iWW=True, tMK=True, hWI=False, hMW=False, hPE=True):
+    def __init__(
+            self, data, axis=0, iWW=True,
+            tMK=True, hWI=False, hMW=False, hPE=True,
+    ):
         if axis != 0:
             self.data = self.reshape_data(np.array(data), axis)
         else:
@@ -214,7 +206,7 @@ class Statictical_Tests:
                 [139, 3.1265],[140, 3.129]])
             log_data = np.log(np.where(data > 0, data, np.nan))
             n = data[~np.isnan(log_data)].shape[0]
-            skew = sp.stats.skew(data, nan_policy='omit')
+            skew = scipy.stats.stats.skew(data, nan_policy='omit')
             if skew < -0.4:
                 ll = np.nanmean(log_data) - K[K[:, 0] == n, 1] * np.nanstd(log_data)
                 low_outliers = np.where(log_data < ll, data, np.nan)
@@ -236,7 +228,11 @@ class Statictical_Tests:
                 low_outliers = np.where(log_data < ll, data, np.nan)
                 log_data[log_data < ll] = np.nan
                 log_data[log_data > ul] = np.nan
-            return high_outliers, low_outliers, np.where(~np.isnan(log_data), data, np.nan), np.exp(ul), np.exp(ll)
+            return (
+                high_outliers, low_outliers,
+                np.where(~np.isnan(log_data), data, np.nan),
+                np.exp(ul), np.exp(ll),
+            )
         def replace_function(test, out_replace):
             w_out = test[2]
             w_out[~np.isnan(test[0])] = out_replace[~np.isnan(test[0])]
@@ -266,8 +262,10 @@ class Statictical_Tests:
     def independence_wald_wolfowitz(data):
         """Apply Wald-Wolfowitz's independence test to a ndarray.
 
-        Wald, A., & Wolfowitz, J. (1943). An Exact Test for Randomness in the Non-Parametric Case 
-        Based on Serial Correlation. The Annals of Mathematical Statistics, 14(4), 378-388.
+        Wald, A., & Wolfowitz, J. (1943).
+        An Exact Test for Randomness in the Non-Parametric Case 
+        Based on Serial Correlation.
+        The Annals of Mathematical Statistics, 14(4), 378-388.
         http://www.jstor.org/stable/2235925
 
         Returns result for a two-sided normal distribution.
@@ -275,15 +273,19 @@ class Statictical_Tests:
         def p_(x):
             x = x[~np.isnan(x)]
             N = x.shape[0]
-            R = np.sum([x[i] * x[i+1] for i in range(N - 1)]) + x[0] * x[-1]
+            R = np.sum([
+                x[i] * x[i+1] for i in range(N - 1)
+            ]) + x[0] * x[-1]
             s1 = np.sum(x**1)
             s2 = np.sum(x**2)
             s3 = np.sum(x**3)
             s4 = np.sum(x**4)
             E_R = (s1**2 - s2) / (N - 1)
-            Var_R = (s2**2 - s4) / (N - 1) + (s1**4 - 4 * s1**2 * s2 + 4 * s1 * s3 + s2**2 - 2 * s4) / ((N - 1) * (N - 2)) - E_R**2
+            Var_R = (s2**2 - s4) / (N - 1) + (
+                s1**4 - 4 * s1**2 * s2 + 4 * s1 * s3 + s2**2 - 2 * s4
+            ) / ((N - 1) * (N - 2)) - E_R**2
             Z = (R - E_R) / Var_R**0.5
-            return sp.norm.cdf(np.abs(Z))
+            return scipy.stats.norm.cdf(np.abs(Z))
         data = np.array(data)
         p = np.apply_along_axis(func1d=p_, axis=0, arr=data)
         res = np.full(p.shape, fill_value='pass 95%')
@@ -296,8 +298,10 @@ class Statictical_Tests:
 
     @staticmethod
     def trend_mann_kendall(data):
-        """Apply Mann Kendall's trend test, the Hamed-Rao modification, the pre whitening modification,
-        the trend free pre whitening modification and the calculation of the sens slope to a 1 dimension ndarray.
+        """Apply Mann Kendall's trend test,
+        the Hamed-Rao modification, the pre whitening modification,
+        the trend free pre whitening modification and the calculation
+        of the sens slope to a 1 dimension ndarray.
         https://github.com/mmhs013/pymannkendall
         Output:
             dictionary with the next keys:
@@ -311,8 +315,10 @@ class Statictical_Tests:
                 - MK-TF-PW
                 - SS
         Citation:
-        Hussain et al., (2019). pyMannKendall: a python package for non parametric Mann Kendall family of trend tests.. 
-        Journal of Open Source Software, 4(39), 1556, https://doi.org/10.21105/joss.01556
+        Hussain et al., (2019). pyMannKendall: a python package for
+        non parametric Mann Kendall family of trend tests.. 
+        Journal of Open Source Software, 4(39), 1556,
+        https://doi.org/10.21105/joss.01556
         """
         def confidence_sens_slope(x, var_s, alpha):
             """Confidence interval for Sen's slope.
@@ -325,7 +331,7 @@ class Statictical_Tests:
                 d[idx : idx + len(j)] = (x[j] - x[i]) / (j - i)
                 idx = idx + len(j)
             N = n*(n-1)/2
-            C_alpha = sp.norm.ppf(1-alpha/2) * var_s ** 0.5
+            C_alpha = scipy.stats.norm.ppf(1-alpha/2) * var_s ** 0.5
             M1 = (N - C_alpha) / 2
             M2 = (N + C_alpha) / 2
             return [
@@ -339,8 +345,8 @@ class Statictical_Tests:
             return (
                 0,# sm.tsa.acf(data)[1],
                 0,# sm.tsa.acf(data - np.arange(1, data.shape[0] + 1) * slope[0])[1],
-                0,# sp.norm.ppf(1 - 0.05 / 2) / np.sqrt(data.shape[0]),
-                0,# - sp.norm.ppf(1 - 0.05 / 2) / np.sqrt(data.shape[0]),
+                0,# scipy.stats.norm.ppf(1 - 0.05 / 2) / np.sqrt(data.shape[0]),
+                0,# - scipy.stats.norm.ppf(1 - 0.05 / 2) / np.sqrt(data.shape[0]),
                 original[0],
                 pymannkendall.original_test(data, alpha=0.01)[0],
                 0,# pymannkendall.hamed_rao_modification_test(data)[0],
@@ -369,22 +375,37 @@ class Statictical_Tests:
         ]
         if len(data.shape) > 1:
             if len(data.shape) > 2:
-                res = np.array([[_1D_test(data[:, i, j]) for j in range(data.shape[2])] for i in range(data.shape[1])])
+                res = np.array([
+                    [
+                        _1D_test(data[:, i, j])
+                        for j in range(data.shape[2])
+                    ]
+                    for i in range(data.shape[1])
+                ])
                 res_ = res[:, :, 4:12]
             else:
-                res = np.array([_1D_test(data[:, i]) for i in range(data.shape[1])])
+                res = np.array([
+                    _1D_test(data[:, i])
+                    for i in range(data.shape[1])
+                ])
                 res_ = res[:, 4:12]
         else:
             res = np.array(_1D_test(data))
             res_ = res[4:12]
         return {
-            'index' : np.where(res_ == 'increasing', 3, np.where(res_ == 'decreasing', 1, 2)),
+            'index' : np.where(
+                res_ == 'increasing', 3,
+                np.where(
+                    res_ == 'decreasing', 1, 2,
+                ),
+            ),
             'result' : res, 'reference' : result_reference,
         }
 
     @staticmethod
     def homogeneity_wilcoxon(data):
-        """Apply Wilcoxon's signed-rank test to a ndarray, in which data is split in two halves.
+        """Apply Wilcoxon's signed-rank test to a ndarray,
+        in which data is split in two halves.
 
         Wilcoxon, F. (12, 1945). Individual Comparisons by Ranking Methods.
         Biometrics Bulletin, 1(6), 80-83. https://www.jstor.org/stable/3001968
@@ -397,7 +418,7 @@ class Statictical_Tests:
             else:
                 i = int((data.shape[0] - 1) / 2)
                 x, y = data[:i], data[i:-1]
-            _, p_value = sp.wilcoxon(x, y, axis=0)
+            _, p_value = scipy.stats.wilcoxon(x, y, axis=0)
             if p_value < 0.01:
                 return [1, 'not pass']
             elif p_value < 0.05:
@@ -410,16 +431,23 @@ class Statictical_Tests:
     
     @staticmethod
     def homogeneity_mann_whitney(data):
-        """Apply Mann-Whitney (1947) test, in which data is divided in paired intervals of different lenghts.
-        It returns the lower p-value of all and an estimated change point based on its position.
+        """Apply Mann-Whitney (1947) test, in which data is divided
+        in paired intervals of different lenghts.
+        It returns the lower p-value of all and an estimated change
+        point based on its position.
 
-        Mann, H. B. and Whitney, D. R. (1947). On a Test of Whether one of Two Random Variables is Stochastically Larger than the Other.
-        The Annals of Mathematical Statistics , Mar., 1947, Vol. 18, No. 1 (Mar., 1947), pp. 50-60. Institute of Mathematical Statistics.
+        Mann, H. B. and Whitney, D. R. (1947). On a Test of Whether
+        one of Two Random Variables is Stochastically Larger than the Other.
+        The Annals of Mathematical Statistics , Mar., 1947, Vol. 18,
+        No. 1 (Mar., 1947), pp. 50-60. Institute of Mathematical Statistics.
         https://www.jstor.org/stable/2236101.
         """
         def _1Dtest(data):
             data = data[~np.isnan(data)]
-            res = np.array([sp.mannwhitneyu(data[:i], data[i:], axis=0) for i in range(1, data.shape[0])])
+            res = np.array([
+                scipy.stats.mannwhitneyu(data[:i], data[i:], axis=0)
+                for i in range(1, data.shape[0])
+            ])
             p_value = np.min(res[:, 1])
             cp = np.arange(1, data.shape[0])[res[:, 1] == p_value][0]
             if p_value < 0.01:
@@ -430,18 +458,26 @@ class Statictical_Tests:
                 return [3, 'pass 95%', cp]
         data = np.array(data)
         res = np.apply_along_axis(_1Dtest, 0, data)
-        return {'index' : res[0], 'result' : res[1], 'change_point' : res[2]}
+        return {
+            'index' : res[0],
+            'result' : res[1],
+            'change_point' : res[2]
+        }
 
     @staticmethod
     def homogeneity_pettitt(data, sim=100):
         """Apply Pettitt's test to a ndarray.
 
-        Pettitt, A. N. (1979). A Non-parametric Approach to the Change-point Problem.
-        Journal of the Royal Statistical Society. Series C (Applied Statistics), 28(2), 126-135.
+        Pettitt, A. N. (1979). A Non-parametric
+        Approach to the Change-point Problem.
+        Journal of the Royal Statistical Society.
+        Series C (Applied Statistics), 28(2), 126-135.
         http://www.jstor.org/stable/2346729
         """
         def _1Dtest(x):
-            result95 = pyhomogeneity.pettitt_test(x, alpha=0.05, sim=sim)
+            result95 = pyhomogeneity.pettitt_test(
+                x, alpha=0.05, sim=sim,
+            )
             # result99 = pyhomogeneity.pettitt_test(x, alpha=0.01, sim=sim)
             # if result99[0]:
             #     return [1, 'not pass', result99[1], result99[4][0], result99[4][1]]
@@ -450,12 +486,22 @@ class Statictical_Tests:
             # else:
             #     return [3, 'pass 95%', result95[1], result95[4][0], result95[4][1]]
             if result95[0]:
-                return [1, 'not pass', result95[1], result95[4][0], result95[4][1]]
+                return [
+                    1, 'not pass', result95[1],
+                    result95[4][0], result95[4][1],
+                ]
             else:
-                return [3, 'pass 95%', result95[1], result95[4][0], result95[4][1]]
+                return [
+                    3, 'pass 95%', result95[1],
+                    result95[4][0], result95[4][1],
+                ]
         data = np.array(data)
         res = np.apply_along_axis(_1Dtest, 0, data)
-        return {'index' : res[0], 'result' : res[1], 'change_point' : res[2], 'mean_1' : res[3], 'mean_2' : res[4]}
+        return {
+            'index' : res[0], 'result' : res[1],
+            'change_point' : res[2],
+            'mean_1' : res[3], 'mean_2' : res[4]
+        }
 
 class LogNormal_MV:
     """Distribución LogNormal de 3 parámetros estimados por Máxima Verosimilitud.
@@ -471,30 +517,48 @@ class LogNormal_MV:
     def __init__(self, data):
         self.sorted_data, self.return_period = weibull_distribution(data)
         self.n = data.shape[0]
-        self.params = sp.lognorm.fit(self.sorted_data, floc=0)
+        self.params = scipy.stats.lognorm.fit(self.sorted_data, floc=0)
     def pdf(self, x):
-        return sp.lognorm.pdf(x, self.params[0], loc=self.params[1], scale=self.params[2])
+        return scipy.stats.lognorm.pdf(
+            x, self.params[0], loc=self.params[1], scale=self.params[2],
+        )
     def cdf(self, x):
-        return sp.lognorm.cdf(x, self.params[0], loc=self.params[1], scale=self.params[2])
+        return scipy.stats.lognorm.cdf(
+            x, self.params[0], loc=self.params[1], scale=self.params[2],
+        )
     def ppf(self, T):
         if type(T) == list:
             T = np.array(T)
         try:
-            fi       = 2.584458*np.log(T) ** (3/8) - 2.252573
-            conf     = self.params[0] / np.sqrt(self.n) * np.sqrt(1 + (fi ** 2) / 2)
-            ppf_mean = sp.lognorm.ppf(1 - 1/T, self.params[0], loc=self.params[1], scale=self.params[2])
+            fi = 2.584458*np.log(T) ** (3/8) - 2.252573
+            conf = self.params[0] / np.sqrt(self.n) * np.sqrt(1 + (fi ** 2) / 2)
+            ppf_mean = scipy.stats.lognorm.ppf(
+                1 - 1/T, self.params[0],
+                loc=self.params[1], scale=self.params[2]
+            )
             ppf_low  = np.exp(np.log(ppf_mean) - 1.96 * conf)
             ppf_high = np.exp(np.log(ppf_mean) + 1.96 * conf)
             return ppf_low, ppf_mean, ppf_high
         except:
             print('The type of "T" must be numpy.array or list.')
     def goodness_fit(self):
-        result_goodness_fit = namedtuple('Goodness_of_Fit', ['Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue', 'Root_Mean_Squared_Error', 'Percentage_error'])
+        result_goodness_fit = namedtuple(
+            'Goodness_of_Fit',
+            [
+                'Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue',
+                'Root_Mean_Squared_Error', 'Percentage_error'
+            ]
+        )
         return result_goodness_fit(
-            sp.kstest(self.sorted_data, self.cdf)[1],
+            scipy.stats.kstest(self.sorted_data, self.cdf)[1],
             chi2(self.sorted_data, self.cdf, 3),
-            root_mean_squared_error(self.sorted_data, self.ppf(self.return_period)[1]),
-            percentage_error(self.sorted_data, self.ppf(self.return_period)[1], _abs=False),
+            root_mean_squared_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+            ),
+            percentage_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+                _abs=False,
+            ),
         )
 
 class GEV_MV:
@@ -511,12 +575,19 @@ class GEV_MV:
     def __init__(self, data):
         self.sorted_data, self.return_period = weibull_distribution(data)
         self.n = data.shape[0]
-        self.params = sp.genextreme.fit(self.sorted_data)
-        self.stats  = sp.genextreme.stats(self.params[0], loc=self.params[1], scale=self.params[2], moments='mvsk')
+        self.params = scipy.stats.genextreme.fit(self.sorted_data)
+        self.stats  = scipy.stats.genextreme.stats(
+            self.params[0], loc=self.params[1],
+            scale=self.params[2], moments='mvsk',
+        )
     def pdf(self, x):
-        return sp.genextreme.pdf(x, self.params[0], loc=self.params[1], scale=self.params[2])
+        return scipy.stats.genextreme.pdf(
+            x, self.params[0], loc=self.params[1], scale=self.params[2],
+        )
     def cdf(self, x):
-        return sp.genextreme.cdf(x, self.params[0], loc=self.params[1], scale=self.params[2])
+        return scipy.stats.genextreme.cdf(
+            x, self.params[0], loc=self.params[1], scale=self.params[2],
+        )
     def ppf(self, T):
         if type(T) == list:
             T = np.array(T)
@@ -524,19 +595,33 @@ class GEV_MV:
             conf = np.sqrt(self.stats[1] / self.n) * \
                 np.sqrt(1.11 + 0.52 * (-np.log(-np.log(1 - 1 / T))) + \
                 0.61 * (-np.log(-np.log(1 - 1 / T))) ** 2)
-            ppf_mean = sp.genextreme.ppf(1 - 1/T, self.params[0], loc=self.params[1], scale=self.params[2])
+            ppf_mean = scipy.stats.genextreme.ppf(
+                1 - 1/T, self.params[0],
+                loc=self.params[1], scale=self.params[2],
+            )
             ppf_low  = ppf_mean - 1.96 * conf
             ppf_high = ppf_mean + 1.96 * conf
             return ppf_low, ppf_mean, ppf_high
         except:
             print('The type of "T" must be numpy.array or list.')
     def goodness_fit(self):
-        result_goodness_fit = namedtuple('Goodness_of_Fit', ['Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue', 'Root_Mean_Squared_Error', 'Percentage_error'])
+        result_goodness_fit = namedtuple(
+            'Goodness_of_Fit',
+            [
+                'Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue',
+                'Root_Mean_Squared_Error', 'Percentage_error'
+            ]
+        )
         return result_goodness_fit(
-            sp.kstest(self.sorted_data, self.cdf)[1],
+            scipy.stats.kstest(self.sorted_data, self.cdf)[1],
             chi2(self.sorted_data, self.cdf, 3),
-            root_mean_squared_error(self.sorted_data, self.ppf(self.return_period)[1]),
-            percentage_error(self.sorted_data, self.ppf(self.return_period)[1], _abs=False),
+            root_mean_squared_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+            ),
+            percentage_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+                _abs=False,
+            ),
         )
 
 class GEV_MM:
@@ -562,17 +647,25 @@ class GEV_MM:
         g = g / ((self.n - 1) * (self.n - 2) * std ** 3)
         # Expresiones para "beta" (c) parámetro de forma de la distribución
         if g > -11.35 and g < 1.1396:
-            self.c = 0.279434 - 0.333535 * g + 0.048306 * g ** 2 - 0.023314 * g ** 3 + \
-                0.00376 * g ** 4 - 0.000263 * g ** 5
+            self.c = 0.279434 - 0.333535 * g + 0.048306 * g ** 2 - \
+                0.023314 * g ** 3 + 0.00376 * g ** 4 - 0.000263 * g ** 5
         if g > 1.14 and g < 18.95:
-            self.c = 0.25031 - 0.29219 * g + 0.075357 * g ** 2 - 0.010883 * g ** 3 + \
-                0.000904 * g ** 4 - 0.000043 * g ** 5
-        self.params = sp.genextreme.fit_loc_scale(self.sorted_data, self.c)
-        self.stats  = sp.genextreme.stats(self.c, loc=self.params[0], scale=self.params[1])
+            self.c = 0.25031 - 0.29219 * g + 0.075357 * g ** 2 - \
+                0.010883 * g ** 3 + 0.000904 * g ** 4 - 0.000043 * g ** 5
+        self.params = scipy.stats.genextreme.fit_loc_scale(
+            self.sorted_data, self.c,
+        )
+        self.stats  = scipy.stats.genextreme.stats(
+            self.c, loc=self.params[0], scale=self.params[1],
+        )
     def pdf(self, x):
-        return sp.genextreme.pdf(x, self.c, loc=self.params[0], scale=self.params[1])
+        return scipy.stats.genextreme.pdf(
+            x, self.c, loc=self.params[0], scale=self.params[1],
+        )
     def cdf(self, x):
-        return sp.genextreme.cdf(x, self.c, loc=self.params[0], scale=self.params[1])
+        return scipy.stats.genextreme.cdf(
+            x, self.c, loc=self.params[0], scale=self.params[1],
+        )
     def ppf(self, T):
         if type(T) == list:
             T = np.array(T)
@@ -580,19 +673,32 @@ class GEV_MM:
             conf = np.sqrt(self.stats[1] / self.n) * \
                 np.sqrt(1.11 + 0.52 * (-np.log(-np.log(1 - 1 / T))) + \
                 0.61 * (-np.log(-np.log(1 - 1 / T))) ** 2)
-            ppf_mean = sp.genextreme.ppf(1 - 1/T, self.c, loc=self.params[0], scale=self.params[1])
+            ppf_mean = scipy.stats.genextreme.ppf(
+                1 - 1/T, self.c, loc=self.params[0], scale=self.params[1],
+            )
             ppf_low  = ppf_mean - 1.96 * conf
             ppf_high = ppf_mean + 1.96 * conf
             return ppf_low, ppf_mean, ppf_high
         except:
             print('The type of "T" must be numpy.array or list.')
     def goodness_fit(self):
-        result_goodness_fit = namedtuple('Goodness_of_Fit', ['Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue', 'Root_Mean_Squared_Error', 'Percentage_error'])
+        result_goodness_fit = namedtuple(
+            'Goodness_of_Fit',
+            [
+                'Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue',
+                'Root_Mean_Squared_Error', 'Percentage_error'
+            ]
+        )
         return result_goodness_fit(
-            sp.kstest(self.sorted_data, self.cdf)[1],
+            scipy.stats.kstest(self.sorted_data, self.cdf)[1],
             chi2(self.sorted_data, self.cdf, 2),
-            root_mean_squared_error(self.sorted_data, self.ppf(self.return_period)[1]),
-            percentage_error(self.sorted_data, self.ppf(self.return_period)[1], _abs=False),
+            root_mean_squared_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+            ),
+            percentage_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+                _abs=False,
+            ),
         )
 
 class Gumbel_MV:
@@ -609,30 +715,49 @@ class Gumbel_MV:
     def __init__(self, data):
         self.sorted_data, self.return_period = weibull_distribution(data)
         self.n = data.shape[0]
-        self.params = sp.gumbel_r.fit(self.sorted_data)
+        self.params = scipy.stats.gumbel_r.fit(self.sorted_data)
     def pdf(self, x):
-        return sp.gumbel_r.pdf(x, loc=self.params[0], scale=self.params[1])
+        return scipy.stats.gumbel_r.pdf(
+            x, loc=self.params[0], scale=self.params[1],
+        )
     def cdf(self, x):
-        return sp.gumbel_r.cdf(x, loc=self.params[0], scale=self.params[1])
+        return scipy.stats.gumbel_r.cdf(
+            x, loc=self.params[0], scale=self.params[1],
+        )
     def ppf(self, T):
         if type(T) == list:
             T = np.array(T)
         try:
-            fi       = (- np.sqrt(6) / np.pi) * (0.5772 + np.log(np.log(T / (T - 1))))
-            conf     = np.sqrt(self.params[1]) / np.sqrt(self.n) * np.sqrt(1 + 1.1396 * fi + 1.1 * fi ** 2)
-            ppf_mean = sp.gumbel_r.ppf(1 - 1/T, loc=self.params[0], scale=self.params[1])
+            fi = (- np.sqrt(6) / np.pi) * \
+                (0.5772 + np.log(np.log(T / (T - 1))))
+            conf = np.sqrt(self.params[1]) / np.sqrt(self.n) * \
+                np.sqrt(1 + 1.1396 * fi + 1.1 * fi ** 2)
+            ppf_mean = scipy.stats.gumbel_r.ppf(
+                1 - 1/T, loc=self.params[0], scale=self.params[1],
+            )
             ppf_low  = ppf_mean - 1.96 * conf
             ppf_high = ppf_mean + 1.96 * conf
             return ppf_low, ppf_mean, ppf_high
         except:
             print('The type of "T" must be numpy.array or list.')
     def goodness_fit(self):
-        result_goodness_fit = namedtuple('Goodness_of_Fit', ['Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue', 'Root_Mean_Squared_Error', 'Percentage_error'])
+        result_goodness_fit = namedtuple(
+            'Goodness_of_Fit',
+            [
+                'Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue',
+                'Root_Mean_Squared_Error', 'Percentage_error',
+            ],
+        )
         return result_goodness_fit(
-            sp.kstest(self.sorted_data, self.cdf)[1],
+            scipy.stats.kstest(self.sorted_data, self.cdf)[1],
             chi2(self.sorted_data, self.cdf, 3),
-            root_mean_squared_error(self.sorted_data, self.ppf(self.return_period)[1]),
-            percentage_error(self.sorted_data, self.ppf(self.return_period)[1], _abs=False),
+            root_mean_squared_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+            ),
+            percentage_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+                _abs=False,
+            ),
         )
 
 class Gumbel_MM:
@@ -649,30 +774,49 @@ class Gumbel_MM:
     def __init__(self, data):
         self.sorted_data, self.return_period = weibull_distribution(data)
         self.n = data.shape[0]
-        self.params = sp.gumbel_r.fit_loc_scale(self.sorted_data)
+        self.params = scipy.stats.gumbel_r.fit_loc_scale(self.sorted_data)
     def pdf(self, x):
-        return sp.gumbel_r.pdf(x, loc=self.params[0], scale=self.params[1])
+        return scipy.stats.gumbel_r.pdf(
+            x, loc=self.params[0], scale=self.params[1],
+        )
     def cdf(self, x):
-        return sp.gumbel_r.cdf(x, loc=self.params[0], scale=self.params[1])
+        return scipy.stats.gumbel_r.cdf(
+            x, loc=self.params[0], scale=self.params[1],
+        )
     def ppf(self, T):
         if type(T) == list:
             T = np.array(T)
         try:
-            fi       = (- np.sqrt(6) / np.pi) * (0.5772 + np.log(np.log(T / (T - 1))))
-            conf     = np.sqrt(self.params[1]) / np.sqrt(self.n) * np.sqrt(1 + 1.1396 * fi + 1.1 * fi ** 2)
-            ppf_mean = sp.gumbel_r.ppf(1 - 1/T, loc=self.params[0], scale=self.params[1])
+            fi = (- np.sqrt(6) / np.pi) * \
+                (0.5772 + np.log(np.log(T / (T - 1))))
+            conf = np.sqrt(self.params[1]) / np.sqrt(self.n) * \
+                np.sqrt(1 + 1.1396 * fi + 1.1 * fi ** 2)
+            ppf_mean = scipy.stats.gumbel_r.ppf(
+                1 - 1/T, loc=self.params[0], scale=self.params[1],
+            )
             ppf_low  = ppf_mean - 1.96 * conf
             ppf_high = ppf_mean + 1.96 * conf
             return ppf_low, ppf_mean, ppf_high
         except:
             print('The type of "T" must be numpy.array or list.')
     def goodness_fit(self):
-        result_goodness_fit = namedtuple('Goodness_of_Fit', ['Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue', 'Root_Mean_Squared_Error', 'Percentage_error'])
+        result_goodness_fit = namedtuple(
+            'Goodness_of_Fit',
+            [
+                'Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue',
+                'Root_Mean_Squared_Error', 'Percentage_error',
+            ],
+        )
         return result_goodness_fit(
-            sp.kstest(self.sorted_data, self.cdf)[1],
+            scipy.stats.kstest(self.sorted_data, self.cdf)[1],
             chi2(self.sorted_data, self.cdf, 2),
-            root_mean_squared_error(self.sorted_data, self.ppf(self.return_period)[1]),
-            percentage_error(self.sorted_data, self.ppf(self.return_period)[1], _abs=False),
+            root_mean_squared_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+            ),
+            percentage_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+                _abs=False,
+            ),
         )
 
 class LogPearson3_MM:
@@ -689,13 +833,24 @@ class LogPearson3_MM:
     def __init__(self, data):
         self.sorted_data, self.return_period = weibull_distribution(data)
         self.n = data.shape[0]
-        self.params = sp.pearson3.fit(np.log10(self.sorted_data), method='MM')
-        self.stats = sp.pearson3.stats(self.params[0], loc=self.params[1], scale=self.params[2])
+        self.params = scipy.stats.pearson3.fit(
+            np.log10(self.sorted_data), method='MM',
+        )
+        self.stats = scipy.stats.pearson3.stats(
+            self.params[0],
+            loc=self.params[1], scale=self.params[2],
+        )
         self.k = self.params[0] / 6
     def pdf(self, x):
-        return sp.pearson3.pdf(np.log10(x), self.params[0], loc=self.params[1], scale=self.params[2])
+        return scipy.stats.pearson3.pdf(
+            np.log10(x), self.params[0],
+            loc=self.params[1], scale=self.params[2],
+        )
     def cdf(self, x):
-        return sp.pearson3.cdf(np.log10(x), self.params[0], loc=self.params[1], scale=self.params[2])
+        return scipy.stats.pearson3.cdf(
+            np.log10(x), self.params[0],
+            loc=self.params[1], scale=self.params[2],
+        )
     def ppf(self, T):
         if type(T) == list:
             T = np.array(T)
@@ -706,8 +861,12 @@ class LogPearson3_MM:
                 if p > 0.5:
                     p = 1 - p
                     w = np.sqrt(np.log(1 / (p ** 2)))
-                    z.append(-(w - ((2.515517 + 0.802853 * w + 0.010328 * w ** 2) \
-                        / (1 + 1.432788 * w + 0.189269 * w ** 2 + 0.001308 * w **3))))
+                    z.append(
+                        -(w - (
+                            (2.515517 + 0.802853 * w + 0.010328 * w ** 2) \
+                            / (1 + 1.432788 * w + 0.189269 * w ** 2 + 0.001308 * w **3)
+                        ))
+                    )
                 else:
                     w = np.sqrt(np.log(1 / (p ** 2)))
                     z.append(w - ((2.515517 + 0.802853 * w + 0.010328 * w ** 2) \
@@ -720,17 +879,28 @@ class LogPearson3_MM:
             b = fi ** 2 - (1.96 ** 2) / self.n
             fi_U = (fi + np.sqrt(fi ** 2 - a * b)) / a
             fi_L = (fi - np.sqrt(fi ** 2 - a * b)) / a
-            ppf_mean = 10 ** (self.stats[0] + fi   * np.sqrt(self.stats[1]))#sp.pearson3.ppf(1 - 1/T, self.params[0], loc=self.params[1], scale=self.params[2])
+            ppf_mean = 10 ** (self.stats[0] + fi   * np.sqrt(self.stats[1]))#scipy.stats.pearson3.ppf(1 - 1/T, self.params[0], loc=self.params[1], scale=self.params[2])
             ppf_low  = 10 ** (self.stats[0] + fi_L * np.sqrt(self.stats[1]))
             ppf_high = 10 ** (self.stats[0] + fi_U * np.sqrt(self.stats[1]))
             return ppf_low, ppf_mean, ppf_high
         except:
             print('The type of "T" must be numpy.array or list.')
     def goodness_fit(self):
-        result_goodness_fit = namedtuple('Goodness_of_Fit', ['Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue', 'Root_Mean_Squared_Error', 'Percentage_error'])
+        result_goodness_fit = namedtuple(
+            'Goodness_of_Fit',
+            [
+                'Kolmogorov_Smirnov_pvalue', 'Chi_Square_pvalue',
+                'Root_Mean_Squared_Error', 'Percentage_error',
+            ],
+        )
         return result_goodness_fit(
-            sp.kstest(self.sorted_data, self.cdf)[1],
+            scipy.stats.kstest(self.sorted_data, self.cdf)[1],
             chi2(self.sorted_data, self.cdf, 3),
-            root_mean_squared_error(self.sorted_data, self.ppf(self.return_period)[1]),
-            percentage_error(self.sorted_data, self.ppf(self.return_period)[1], _abs=False),
+            root_mean_squared_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+            ),
+            percentage_error(
+                self.sorted_data, self.ppf(self.return_period)[1],
+                _abs=False,
+            ),
         )

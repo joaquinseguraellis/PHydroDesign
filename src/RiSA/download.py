@@ -4,13 +4,17 @@ This module is used for frequency analysis of hydrological data.
 
 # Libraries
 
+import os, platform, shutil, datetime, time
 import requests
 
+import numpy as np
 import pandas as pd
+import multiprocessing as mp
 
+from pathlib import Path
 from subprocess import Popen
 
-from .libraries import *
+# from .libraries import *
 
 # Functions
 
@@ -94,7 +98,7 @@ class Download_IMERG:
                         with open(fp,'rb') as f:
                             if f.readlines()[26] == 'Service Temporarily Unavailable':
                                 print(f'{url} is temporarily unavailable')
-                                tm.sleep(2)
+                                time.sleep(2)
                                 os.remove(fp)
                                 try_count += 1
                                 continue
@@ -105,7 +109,7 @@ class Download_IMERG:
                 except Exception as e:
                     try_count += 1
                     print(f'Error downloading from {url} and saving to {fp}. Error: {e}')
-                    tm.sleep(1)
+                    time.sleep(1)
     
     @staticmethod
     def all_exists(paths):

@@ -5,12 +5,29 @@ This module is used for frequency analysis of hydrological data.
 # Libraries
 
 import os, pickle
+import sklearn.metrics
 
 import numpy as np
 
 # from .libraries import *
 
 # Functions
+
+def test_code(f):
+    """
+    Tool for testing a function.
+    """
+    import cProfile, pstats, io
+    from pstats import SortKey
+    pr = cProfile.Profile()
+    pr.enable()
+    f()
+    pr.disable()
+    s = io.StringIO()
+    sortby = SortKey.CUMULATIVE
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())
 
 def bin_file(
         path, func, params=None
@@ -130,3 +147,38 @@ def inside_bbox(
         - bool : True if point (x, y) is inside square bbox limits.
     """
     return y < bbox[3] and y > bbox[2] and x < bbox[1] and x > bbox[0]
+
+def root_mean_squared_error(obs, est):
+    """
+    Return the Root of the Mean Squared Error between "obs" and "est", which are the observed and estimated data.
+    """
+    est = est[~np.isnan(obs)]
+    obs = obs[~np.isnan(obs)]
+    obs = obs[~np.isnan(est)]
+    est = est[~np.isnan(est)]
+    return sklearn.metrics.mean_squared_error(obs, est, squared=False)
+
+def percentage_error(obs, est, _abs=True):
+    """
+    Return the Percentage Error between "obs" and "est", which are the observed and estimated data.
+    """
+    if _abs:
+        return 100 * np.abs((est - obs) / obs)
+    elif ~_abs:
+        return 100 * (est - obs) / obs
+    else:
+        raise ValueError('"_abs" must be True or False.')
+
+def nash_coeficient(obs, est):
+    """
+    Return de Nash-Sutcliffe model efficiency coefficient. First the original, second the normalized and last the modified for extreme values.
+    """
+    NSE = 1 - np.nansum((obs - est)**2) / np.nansum((obs - np.nanmean(obs))**2)
+    return [
+        NSE,
+        1 / (2 - NSE),
+        1 - np.nansum(np.absolute(obs - est)) / np.nansum(np.absolute(obs - np.nanmean(obs))),
+    ]
+
+def minimum_lenght(arr, lenght):
+    return arr[~np.isnan(arr)].shape[0] >= lenght

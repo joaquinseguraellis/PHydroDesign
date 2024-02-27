@@ -5,9 +5,9 @@ This module is used for frequency analysis of hydrological data.
 # Libraries
 
 import scipy
+import scipy.stats
 import matplotlib
 
-from .libraries import *
 from .geo_tools import *
 
 # Functions
@@ -23,12 +23,12 @@ def tests_examples(
         xlabel = ['(a)', '(b)', '(c)']
         sin = 20 * np.sin(2 * np.pi * np.arange(N) / N)
         data1 = [
-            sp.lognorm.rvs(0.3, 0, 70, N) + sin,
+            scipy.stats.lognorm.rvs(0.3, 0, 70, N) + sin,
             np.concatenate([
-                sp.lognorm.rvs(0.3, 0, 130, int(N/2)),
-                sp.lognorm.rvs(0.3, 0, 60, int(N/2)),
+                scipy.stats.lognorm.rvs(0.3, 0, 130, int(N/2)),
+                scipy.stats.lognorm.rvs(0.3, 0, 60, int(N/2)),
             ]),
-            sp.lognorm.rvs(0.3, 0, 70, N) + np.arange(N),
+            scipy.stats.lognorm.rvs(0.3, 0, 70, N) + np.arange(N),
         ]
         data2 = [
             sin + 70,

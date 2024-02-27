@@ -4,9 +4,14 @@ This module is made to process rainfall data.
 
 # Libraries
 
-from dateutil.relativedelta import relativedelta
+import datetime
+import pickle
+import csv
+import scipy.stats
 
-from .libraries import *
+import numpy as np
+
+from dateutil.relativedelta import relativedelta
 
 # Functions
 
@@ -426,7 +431,7 @@ class Rain_Gauge(Rainfall_Indices):
                 return months[data == np.nanmax(data)][0]
         def _1D(res, months):
             res = res[~np.isnan(res)]
-            freq = sp.relfreq(res, numbins=12, defaultreallimits=(0.5, 12.5))[0]
+            freq = scipy.stats.relfreq(res, numbins=12, defaultreallimits=(0.5, 12.5))[0]
             months = np.flip(months[np.argsort(freq)])
             freq = np.flip(freq[np.argsort(freq)])
             max_month = int(months[0])

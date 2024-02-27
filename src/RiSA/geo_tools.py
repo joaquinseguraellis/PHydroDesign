@@ -5,15 +5,16 @@ This module contains functions and clases for managing geographically distribute
 # Libraries
 
 import pykrige
-import shapefile
 import rasterio
 import h5py
 import requests
 import scipy
+import pkg_resources
+import datetime
+import copy
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import shapely.geometry
 import rasterio.mask
 import rasterio.transform
 import cartopy.crs as ccrs
@@ -25,11 +26,12 @@ from global_land_mask import globe
 from osgeo import gdal
 from osgeo import ogr
 from tqdm import tqdm
+from pathlib import Path
 
-from .libraries import *
 from .hydro_tools import *
 from .frequency_analysis import *
 from .basics import *
+from .masks import *
 
 # Global variables
 
@@ -354,28 +356,6 @@ def kriging_interp_to_grid(
     )
     return uk.execute('grid', x_grid, y_grid)[0]
 
-def shp_mask(
-        raster, transform, shp_path,
-):
-    """
-    Applies a mask to raster data based in a shape file.
-    """
-    with shapefile.Reader(shp_path) as shp_file:
-        geom = shapely.geometry.shape(shp_file.shape(0).__geo_interface__)
-    with rasterio.io.MemoryFile() as memfile:
-        with memfile.open(
-            driver='GTiff',
-            height=raster.shape[0],
-            width=raster.shape[1],
-            count=1,
-            dtype=raster.dtype,
-            transform=transform,
-        ) as dataset:
-            dataset.write(raster, 1)
-        with memfile.open() as dataset:
-            output, _ = rasterio.mask.mask(dataset, [geom], nodata=np.nan)
-    return output.squeeze(0)
-
 def get_kriging_prec(
         lon, lat, lon_grid, lat_grid, prec,
         shp_path=None, elevation_mask=None,
@@ -398,23 +378,6 @@ def get_kriging_prec(
         return np.ma.masked_array(prec_interp, elevation_mask)
     else:
         return prec_interp
-    
-def fill_interp(
-        lon, lat, data, mask=None,
-):
-    """
-    
-    """
-    if mask is not None:
-        data[mask] = np.nan
-    X, Y = np.meshgrid(lon, lat)
-    points = np.array([X.flatten(), Y.flatten()]).T
-    data = data.flatten()
-    points = points[~np.isnan(data)]
-    data = data[~np.isnan(data)]
-    return scipy.interpolate.griddata(
-        points, data, (X, Y), method='linear',
-    )
 
 # Classes
 
@@ -510,72 +473,6 @@ class Map:
                 departments, self.projection_crs, edgecolor='black',
                 facecolor='none', linewidth=0.2, linestyle='-.',
             )
-
-class IDW_Grid_Interpolation:
-    """
-    Inverse distance weighting interpolation for regular gridded data.
-    Initiate the class with:
-    - x, y (1D numpy.array or list): coordinates of gridded data.
-    - x_, y_ (int or float): coordinates where interpolation is needed.
-    - power (int or float): power for the equation, 1 and 2 are usually used.
-    https://en.wikipedia.org/wiki/Inverse_distance_weighting
-    """
-
-    def __init__(self, x, y, x_, y_, power):
-        self.x, self.y = x, y
-        self.p = (x_, y_)
-        x, y = np.meshgrid(self.x, self.y)
-        self.get_d(x, y, x_, y_)
-        self.get_w(power)
-
-    def get_d(self, x, y, x_, y_):
-        """
-        
-        """
-        self.d = ((x - x_)**2 + (y - y_)**2)**0.5
-
-    def get_w(self, power):
-        """
-        
-        """
-        self.w = self.d**-power
-
-    def get_u(self, u):
-        """
-        
-        """
-        if np.any(self.tolerance):
-            return u[self.tolerance][0]
-        else:
-            w = copy.deepcopy(self.w)
-            w[np.isnan(u)] = np.nan
-            return np.nansum(w * u) / np.nansum(w)
-    
-    def interp(self, grid_data, tolerance=0.001, axes=None):
-        """
-        
-        """
-        self.tolerance = self.d <= tolerance
-        if axes is not None:
-            grid_data = np.transpose(grid_data, axes)
-        return np.array([self.get_u(_) for _ in grid_data])
-
-class RegularGridInterpolator:
-    """
-    
-    """
-
-    def __init__(self, points, values, method) -> None:
-        self.interps = np.array([
-            scipy.interpolate.RegularGridInterpolator(points, _, method)
-                for _ in values
-        ])
-    
-    def interp(self, x, y):
-        """
-        
-        """
-        return np.array([_([x, y])[0] for _ in self.interps])
     
 class Card(Map):
     """
