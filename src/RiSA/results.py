@@ -44,7 +44,7 @@ def loc_validation(
         geom = shapely.geometry.shape(shp_file.shape(0).__geo_interface__)
     return geom.contains(shapely.geometry.Point(lon, lat))
 
-def get_result(
+def get_design_rainfall(
         product, T, lon, lat,
         shp_path=ARG_SHP_PATH,
 ):
