@@ -27,7 +27,7 @@ def loc_validation(
     """
     with shapefile.Reader(shp_path) as shp_file:
         geom = shapely.geometry.shape(shp_file.shape(0).__geo_interface__)
-    print(geom.contains(shapely.geometry.Point(lon, lat)))
+    return geom.contains(shapely.geometry.Point(lon, lat))
 
 def get_result(
         product, T, lon, lat,
