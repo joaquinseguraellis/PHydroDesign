@@ -4,10 +4,12 @@ This module gives the result of the analysis.
 
 # Dependencies
 
+from IPython.display import clear_output
 MODULES = ['pyshp', 'shapely', 'rasterio', 'scipy']
 import pip
 for module in MODULES:
     pip.main(['install', module])
+    clear_output()
 del pip
 
 # Libraries
