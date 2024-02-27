@@ -15,26 +15,6 @@ from dateutil.relativedelta import relativedelta
 
 # Functions
 
-def complete_data(time, prec, delta=datetime.timedelta(days=1)):
-    """
-    This function takes precipitacion data array and the associated time array.
-    First, it complete time array from 1st of January of the first year to 31th of December of the last year.
-    Then, it complete with NaN values where data is missing.
-    Returns completed time and precipitation arrays.
-    """
-    time_ = np.arange(
-        datetime.datetime(time[0].year, 1, 1),
-        datetime.datetime(time[-1].year, 12, 31) + datetime.timedelta(days=1),
-        delta,
-    ).astype(datetime.datetime)
-    prec_ = np.zeros((time_.shape[0]))
-    prec_[:] = np.nan
-    aux = 0
-    for i in range(time.shape[0]):
-        aux = list(time_).index(time[i], aux)
-        prec_[aux] = prec[i]
-    return time_, prec_
-
 def adjacent_months(month: int, steps: int = 1) -> tuple:
     """
     This functions return the previous and next "steps" months from "month".

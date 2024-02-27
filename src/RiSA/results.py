@@ -5,14 +5,10 @@ This module gives the result of the analysis.
 # Libraries
 
 import pickle
-import shapefile
-import shapely
 import pkg_resources
-import rasterio
 
-import numpy as np
-
-from .geo_tools import IDW_Grid_Interpolation, shp_mask, fill_interp
+from .masks import *
+from .interp import *
 
 # Global variables
 

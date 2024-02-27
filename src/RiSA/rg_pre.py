@@ -4,13 +4,14 @@ This module is made to process rainfall data.
 
 # Libraries
 
-import os
+import os, csv
 import xlrd
 import openpyxl
 
 from pathlib import Path
 from tqdm import tqdm
 
+from .basics import *
 from .hydro_tools import *
 
 # Functions
