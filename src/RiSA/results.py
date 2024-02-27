@@ -5,6 +5,10 @@ This module gives the result of the analysis.
 # Dependencies
 
 MODULES = ['pyshp', 'shapely', 'rasterio', 'scipy']
+import pip
+for module in MODULES:
+    pip.main(['install', module])
+del pip
 
 # Libraries
 
@@ -48,10 +52,10 @@ def get_result(
     
     """
     result = {
-        'lon': lon,
-        'lat': lat,
-        'in_Arg': loc_validation(lon, lat, shp_path),
-        'T': T,
+        'longitude': lon,
+        'latitude': lat,
+        'in Arg': loc_validation(lon, lat, shp_path),
+        'Return period': T,
     }
     data_dict = open_results(
         pkg_resources.resource_filename('RiSA', f'data/imerg_{product}.risa'),
@@ -62,7 +66,7 @@ def get_result(
         power = 2
     idw = IDW_Grid_Interpolation(data_dict['lon'], data_dict['lat'], lon, lat, power)
     l = data_dict['T'] == T
-    for k, key_ in enumerate(['low_limit', 'value', 'high_limit']):
+    for k, key_ in enumerate(['Lower limit', 'Estimate', 'Higher limit']):
         prec = data_dict[product][:, :, k, l].T
         prec = fill_interp(
             data_dict['lon'], data_dict['lat'],
