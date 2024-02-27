@@ -7,6 +7,7 @@
 import shapefile
 import shapely
 import rasterio
+import rasterio.mask
 import scipy
 
 import numpy as np
