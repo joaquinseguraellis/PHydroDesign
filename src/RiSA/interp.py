@@ -4,9 +4,8 @@
 
 # Libraries
 
-import os, pickle, copy
+import copy
 import scipy
-import pykrige
 
 import numpy as np
 

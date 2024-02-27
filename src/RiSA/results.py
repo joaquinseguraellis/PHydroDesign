@@ -2,6 +2,10 @@
 This module gives the result of the analysis.
 """
 
+# Dependencies
+
+MODULES = ['pyshp', 'shapely', 'rasterio', 'scipy']
+
 # Libraries
 
 import pickle
