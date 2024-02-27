@@ -2,7 +2,8 @@
 This module is used to install and import the require libraries.
 """
 
-import pip, sys, os, math, json, xlrd, pickle, datetime, copy, csv, getpass, shutil, platform
+import pip, sys, os, xlrd, pickle, datetime
+import copy, csv, getpass, shutil, platform
 import matplotlib
 import pkg_resources
 import sklearn.metrics
@@ -71,12 +72,6 @@ except:
     import pandas as pd
 
 try:
-    import statsmodels.api as sm
-except:
-    pip.main(['install', 'statsmodels'])
-    import statsmodels.api as sm
-
-try:
     import requests
 except:
     pip.main(['install', 'requests'])
@@ -89,12 +84,6 @@ except:
     import openpyxl
 
 try:
-    import imageio
-except:
-    pip.main(['install', 'imageio'])
-    import imageio
-
-try:
     import global_land_mask
 except:
     pip.main(['install', 'global_land_mask'])
@@ -105,10 +94,6 @@ try:
 except:
     pip.main(['install', 'h5py'])
     import h5py
-
-PROVINCES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_1_states_provinces.shp')
-COUNTRIES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_0_countries.shp')
-ARG_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/argentina.shp')
 
 clear_output()
 

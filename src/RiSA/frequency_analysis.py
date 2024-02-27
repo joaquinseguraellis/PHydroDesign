@@ -613,7 +613,7 @@ class Gumbel_MV:
         if type(T) == list:
             T = np.array(T)
         try:
-            fi       = (- np.sqrt(6) / math.pi) * (0.5772 + np.log(np.log(T / (T - 1))))
+            fi       = (- np.sqrt(6) / np.pi) * (0.5772 + np.log(np.log(T / (T - 1))))
             conf     = np.sqrt(self.params[1]) / np.sqrt(self.n) * np.sqrt(1 + 1.1396 * fi + 1.1 * fi ** 2)
             ppf_mean = sp.gumbel_r.ppf(1 - 1/T, loc=self.params[0], scale=self.params[1])
             ppf_low  = ppf_mean - 1.96 * conf
@@ -653,7 +653,7 @@ class Gumbel_MM:
         if type(T) == list:
             T = np.array(T)
         try:
-            fi       = (- np.sqrt(6) / math.pi) * (0.5772 + np.log(np.log(T / (T - 1))))
+            fi       = (- np.sqrt(6) / np.pi) * (0.5772 + np.log(np.log(T / (T - 1))))
             conf     = np.sqrt(self.params[1]) / np.sqrt(self.n) * np.sqrt(1 + 1.1396 * fi + 1.1 * fi ** 2)
             ppf_mean = sp.gumbel_r.ppf(1 - 1/T, loc=self.params[0], scale=self.params[1])
             ppf_low  = ppf_mean - 1.96 * conf

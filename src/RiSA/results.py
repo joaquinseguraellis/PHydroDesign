@@ -4,8 +4,19 @@ This module gives the result of the analysis.
 
 # Libraries
 
-from .libraries import *
-from .geo_tools import *
+import pickle
+import shapefile
+import shapely
+import pkg_resources
+import rasterio
+
+import numpy as np
+
+from .geo_tools import IDW_Grid_Interpolation, shp_mask, fill_interp
+
+# Global variables
+
+ARG_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/argentina.shp')
 
 # Functions
 
@@ -57,12 +68,13 @@ def get_result(
             data_dict['lon'], data_dict['lat'],
             prec[0], ~data_dict[f'{product}_tests'],
         )
-        prec = shp_mask(
-            prec,
-            rasterio.transform.Affine(
-                0.1, 0, data_dict['lon'][0], 0, 0.1, data_dict['lat'][0],
-            ),
-            shp_path,
-        )
+        if shp_path is not None:
+            prec = shp_mask(
+                prec,
+                rasterio.transform.Affine(
+                    0.1, 0, data_dict['lon'][0], 0, 0.1, data_dict['lat'][0],
+                ),
+                shp_path,
+            )
         result[key_] = idw.interp(np.array([prec]))[0]
     return result

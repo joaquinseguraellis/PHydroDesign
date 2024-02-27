@@ -24,6 +24,11 @@ from .libraries import *
 from .hydro_tools import *
 from .frequency_analysis import *
 
+# Global variables
+
+PROVINCES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_1_states_provinces.shp')
+COUNTRIES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_0_countries.shp')
+
 # Functions
 
 def cut(
