@@ -115,10 +115,25 @@ class Download_IMERG:
     def all_exists(paths):
         return np.all([os.path.exists(_) for _ in paths])
 
-    def download(self, start_datetime, end_datetime, multiprocess=True, cpu_count=2):
-        dts = pd.date_range(start=start_datetime, end=end_datetime, freq=self.freq)
-        urls = [self.generate_url(dt, self.freq, self.version) for dt in dts]
-        file_paths = [Path(self.save_path, f'IMERG_{self.version}_{self.freq}_{dt.year:04}{dt.month:02}{dt.day:02}{dt.hour:02}{dt.minute:02}.hdf5') for dt in dts]
+    def download(
+            self, start_datetime, end_datetime,
+            multiprocess=True, cpu_count=2
+    ):
+        dts = pd.date_range(
+            start=start_datetime, end=end_datetime, freq=self.freq,
+        )
+        urls = [
+            self.generate_url(dt, self.freq, self.version)
+            for dt in dts
+        ]
+        base = f'IMERG_{self.version}_{self.freq}_'
+        file_paths = [
+            Path(
+                self.save_path,
+                f'{base}{dt.year:04}{dt.month:02}{dt.day:02}{dt.hour:02}{dt.minute:02}.hdf5',
+            )
+            for dt in dts
+        ]
         inputs = zip(urls, file_paths)
         if multiprocess:
             with mp.pool.ThreadPool(cpu_count) as executor:

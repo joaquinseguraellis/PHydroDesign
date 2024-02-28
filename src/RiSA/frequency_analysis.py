@@ -111,13 +111,13 @@ def freq_conditions(indices, w_out=True):
     out_k = 'outliers'
     if w_out:
         data = indices.result[key_][out_k]['data_without_outliers'][-1]
-        key_ = 'data_outliers_tests'
+        test_k = 'data_outliers_tests'
     else:
         data = indices.result[key_]['data']
-        key_ = 'data_tests'
-    iWW = int(indices.result[key_][key_]['iWW']['index']) >= 3
-    hPE = int(indices.result[key_][key_]['hPE']['index']) >= 3
-    tMK = int(indices.result[key_][key_]['tMK']['index'][0]) == 2
+        test_k = 'data_tests'
+    iWW = int(indices.result[key_][test_k]['iWW']['index']) >= 3
+    hPE = int(indices.result[key_][test_k]['hPE']['index']) >= 3
+    tMK = int(indices.result[key_][test_k]['tMK']['index'][0]) == 2
     return minimum_lenght(data, 14) * iWW * hPE * tMK
 
 # Classes
