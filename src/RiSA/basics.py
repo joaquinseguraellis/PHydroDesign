@@ -115,20 +115,20 @@ def cut(
     y = y[y <= bbox[3]]
     return data, x, y
 
-def search_loc(
-        lons_, lats_, lons, lats,
-):
-    """
-    Search for nearest coordinates from lons and lats to lons_ and lats_.
-    Return a numpy.array with the index where to find those coordinates.
-    """
-    lons  = np.sort(lons)
-    lats  = np.sort(lats)
-    low_lons  = np.searchsorted(lons, lons_)-1
-    high_lons = np.searchsorted(lons, lons_)
-    low_lats  = np.searchsorted(lats, lats_)-1
-    high_lats = np.searchsorted(lats, lats_)
-    return np.array([low_lons, high_lons, low_lats, high_lats])
+# def search_loc(
+#         lons_, lats_, lons, lats,
+# ):
+#     """
+#     Search for nearest coordinates from lons and lats to lons_ and lats_.
+#     Return a numpy.array with the index where to find those coordinates.
+#     """
+#     lons  = np.sort(lons)
+#     lats  = np.sort(lats)
+#     low_lons  = np.searchsorted(lons, lons_)-1
+#     high_lons = np.searchsorted(lons, lons_)
+#     low_lats  = np.searchsorted(lats, lats_)-1
+#     high_lats = np.searchsorted(lats, lats_)
+#     return np.array([low_lons, high_lons, low_lats, high_lats])
 
 def inside_bbox(
         bbox, y, x,
