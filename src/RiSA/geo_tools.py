@@ -431,14 +431,20 @@ class Map:
             self.bbox[2] - df, self.bbox[3] + df,
         ], crs=self.projection_crs)
         grid_step = np.min([int(self.width / 5), int(self.height / 5)])
+        if grid_step == 0:
+            grid_step = 2
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5,
             linestyle='--', alpha=0.7, dms=True,
             xlocs=np.arange(
-                int(self.bbox[0] - df), int(self.bbox[1] + df), grid_step
+                int(self.bbox[0] - df),
+                int(self.bbox[1] + df),
+                grid_step,
             ),
             ylocs=np.arange(
-                int(self.bbox[2] - df), int(self.bbox[3] + df), grid_step
+                int(self.bbox[2] - df),
+                int(self.bbox[3] + df),
+                grid_step,
             ),
         )
         gl.xlabel_style = {'size': self.fs}
