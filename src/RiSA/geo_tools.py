@@ -214,7 +214,7 @@ def get_imerg_grid(
     This function opens imerg grid data, applies frequency analysis and saves it to a binary file.
     """
     def _open(path):
-        bbox = [-76.05, -53.05, -55.95, -21.05] # lat1, lat2, lon1, lon2
+        bbox = [-76.05, -53.05, -55.95, -21.05] # lon1, lon2, lat1, lat2
         with h5py.File(path, 'r') as hdf_file:
             imerg_time = np.array(
                 [
@@ -389,9 +389,9 @@ class Map:
     projection_crs = ccrs.PlateCarree()
 
     def __init__(self, bbox, fontsize=12):
-        self.bbox = bbox
-        self.width = self.bbox[3] - self.bbox[1]
-        self.height = self.bbox[2] - self.bbox[0]
+        self.bbox = bbox # lon1, lon2, lat1, lat2
+        self.width = self.bbox[1] - self.bbox[0]
+        self.height = self.bbox[3] - self.bbox[2]
         self.fs = fontsize
 
     def create_figure(self, title=None, figsize=None, dpi=300):
@@ -411,9 +411,9 @@ class Map:
         head_width = width * 2.5
         head_length = height * 0.3
         if x is None:
-            x = self.width * 0.82 + self.bbox[1]
+            x = self.width * 0.82 + self.bbox[0]
         if y is None:
-            y = self.height * 0.10 + self.bbox[0]
+            y = self.height * 0.10 + self.bbox[2]
         ax.add_patch(mpatches.FancyArrow(
             x, y, 0, height, width=width, head_width=head_width,
             head_length=head_length, length_includes_head=True,
@@ -427,18 +427,18 @@ class Map:
 
     def set_map(self, ax, df=0):
         ax.set_extent([
-            self.bbox[1] - df, self.bbox[3] + df,
-            self.bbox[0] - df, self.bbox[2] + df,
+            self.bbox[0] - df, self.bbox[1] + df,
+            self.bbox[2] - df, self.bbox[3] + df,
         ], crs=self.projection_crs)
         grid_step = np.min([int(self.width / 5), int(self.height / 5)])
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5,
             linestyle='--', alpha=0.7, dms=True,
             xlocs=np.arange(
-                int(self.bbox[1] - df), int(self.bbox[3] + df), grid_step
+                int(self.bbox[0] - df), int(self.bbox[1] + df), grid_step
             ),
             ylocs=np.arange(
-                int(self.bbox[0] - df), int(self.bbox[2] + df), grid_step
+                int(self.bbox[2] - df), int(self.bbox[3] + df), grid_step
             ),
         )
         gl.xlabel_style = {'size': self.fs}
@@ -481,11 +481,11 @@ class Card(Map):
 
     def __init__(self, bbox, fontsize, station, save_path):
         super().__init__(bbox, fontsize)
-        self.bbox = bbox
+        self.bbox = bbox # lon1, lon2, lat1, lat2
         self.station = station
         self.save_path = save_path
-        self.width = self.bbox[3] - self.bbox[1]
-        self.height = self.bbox[2] - self.bbox[0]
+        self.width = self.bbox[1] - self.bbox[0]
+        self.height = self.bbox[3] - self.bbox[2]
         self.fs = fontsize
 
     def create_figure(self, title=None, figsize=None, dpi=300):
@@ -511,9 +511,9 @@ class Card(Map):
         head_width = width * 2.5
         head_length = height * 0.3
         if x is None:
-            x = self.width * 0.82 + self.bbox[1]
+            x = self.width * 0.82 + self.bbox[0]
         if y is None:
-            y = self.height * 0.10 + self.bbox[0]
+            y = self.height * 0.10 + self.bbox[2]
         ax.add_patch(mpatches.FancyArrow(
             x, y, 0, height, width=width,
             head_width=head_width, head_length=head_length,
@@ -527,17 +527,17 @@ class Card(Map):
 
     def set_map(self, ax, df=0):
         ax.set_extent([
-            self.bbox[1] - df, self.bbox[3] + df,
-            self.bbox[0] - df, self.bbox[2] + df,
+            self.bbox[0] - df, self.bbox[1] + df,
+            self.bbox[2] - df, self.bbox[3] + df,
         ], crs=self.projection_crs)
         grid_step = np.min([int(self.width / 5), int(self.height / 5)])
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5, linestyle='--', alpha=0.7, dms=True,
             xlocs=np.arange(
-                int(self.bbox[1] - df), int(self.bbox[3] + df), grid_step,
+                int(self.bbox[0] - df), int(self.bbox[1] + df), grid_step,
             ),
             ylocs=np.arange(
-                int(self.bbox[0] - df), int(self.bbox[2] + df), grid_step,
+                int(self.bbox[2] - df), int(self.bbox[3] + df), grid_step,
             ),
         )
         gl.xlabel_style = {'size': self.fs}
