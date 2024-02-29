@@ -27,3 +27,8 @@ The output is:
     'Higher limit': 171.66438455465254,
 }
 ```
+# Citation
+
+# Dependencies
+Consejo Nacional de Investigaciones Científicas y Técnicas ([**CONICET**](https://www.conicet.gov.ar/))  
+Facultad de Ciencias Exactas, Físicas y Naturales. Universidad Nacional de Córdoba ([**FCEFyN**](https://fcefyn.unc.edu.ar/))
