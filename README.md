@@ -1,4 +1,4 @@
-![Portada_BG](https://github.com/joaquinseguraellis/PHydroDesign/assets/57773288/74427509-313c-4fea-b13e-b9f4d82b9461)
+![Portada_BG](https://github.com/joaquinseguraellis/PHydroDesign/assets/57773288/0a839427-7e52-42b2-a745-ace74063e8ed)
 # Introduction
 This library has several tools for statistical analysis of rainfall series.  
 The main purpose of this library is to compare IMERG rainfall with rain gauges and give the results of it.
