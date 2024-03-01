@@ -1,7 +1,7 @@
-![Portada_BG](https://github.com/joaquinseguraellis/PydroDesign/assets/57773288/153cdcb2-8e92-4641-bbe0-df5a2ab7a316)
+![Portada_BG](https://github.com/joaquinseguraellis/PHydroDesign/assets/57773288/0a839427-7e52-42b2-a745-ace74063e8ed)
 # Introduction
+A Python Code library for Hydrological Design  
 This library has several tools for statistical analysis of rainfall series.  
-The main purpose of this library is to compare IMERG rainfall with rain gauges and give the results of it.
 # How to install
 ```
 pip install --user --upgrade --force-reinstall "git+https://github.com/joaquinseguraellis/PydroDesign.git"
