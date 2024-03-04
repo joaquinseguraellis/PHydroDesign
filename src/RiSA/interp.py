@@ -69,8 +69,10 @@ class RegularGridInterpolator:
 
     def __init__(self, points, values, method) -> None:
         self.interps = np.array([
-            scipy.interpolate.RegularGridInterpolator(points, _, method)
-                for _ in values
+            scipy.interpolate.RegularGridInterpolator(
+                points, _, method,
+            )
+            for _ in values
         ])
     
     def interp(self, x, y):
