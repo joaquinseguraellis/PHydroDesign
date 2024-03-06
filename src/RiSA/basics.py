@@ -183,22 +183,23 @@ def nash_coeficient(obs, est):
 def minimum_lenght(arr, lenght):
     return arr[~np.isnan(arr)].shape[0] >= lenght
 
-def complete_data(time, prec, delta=datetime.timedelta(days=1)):
+def complete_data(dt, data, delta=datetime.timedelta(days=1)):
     """
-    This function takes precipitacion data array and the associated time array.
-    First, it complete time array from 1st of January of the first year to 31th of December of the last year.
+    This function takes data array and the associated time array.
+    First, it complete time array from 1st of January of the first
+    year to 31th of December of the last year.
     Then, it complete with NaN values where data is missing.
-    Returns completed time and precipitation arrays.
+    Returns completed time and arrays.
     """
-    time_ = np.arange(
-        datetime.datetime(time[0].year, 1, 1),
-        datetime.datetime(time[-1].year, 12, 31) + datetime.timedelta(days=1),
+    dt_ = np.arange(
+        datetime.datetime(dt[0].year, 1, 1),
+        datetime.datetime(dt[-1].year, 12, 31) + datetime.timedelta(days=1),
         delta,
     ).astype(datetime.datetime)
-    prec_ = np.zeros((time_.shape[0]))
-    prec_[:] = np.nan
+    data_ = np.zeros((dt_.shape[0]))
+    data_[:] = np.nan
     aux = 0
-    for i in range(time.shape[0]):
-        aux = list(time_).index(time[i], aux)
-        prec_[aux] = prec[i]
-    return time_, prec_
+    for i in range(dt.shape[0]):
+        aux = list(dt_).index(dt[i], aux)
+        data_[aux] = data[i]
+    return dt_, data_
