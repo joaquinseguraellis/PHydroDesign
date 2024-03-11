@@ -12,6 +12,7 @@ import scipy
 import pkg_resources
 import datetime
 import copy
+import tqdm
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
@@ -25,7 +26,6 @@ import xarray as xr
 from global_land_mask import globe
 from osgeo import gdal
 from osgeo import ogr
-from tqdm import tqdm
 from pathlib import Path
 
 from .hydro_tools import *
@@ -172,7 +172,7 @@ def get_imerg_daily_sum(
     precipitationUncal = list()
     IRprecipitation = list()
     HQprecipitation = list()
-    for _ in tqdm(file_paths):
+    for _ in tqdm.tqdm(file_paths):
         data = [get_imerg_dataset(file_path, bbox) for file_path in _]
         precipitationCal.append(
             np.nansum(
@@ -280,7 +280,7 @@ def get_imerg_grid(
     if not os.path.exists(bin_path):
         files = os.listdir(imerg_path)
         imerg_grid, imerg_time, lon, lat = _open(Path(imerg_path, files[0]))
-        for imerg_file in tqdm(files[1:]):
+        for imerg_file in tqdm.tqdm(files[1:]):
             imerg_data_, t, _, _ = _open(Path(imerg_path, imerg_file))
             imerg_time = np.concatenate([imerg_time, t])
             imerg_grid = np.concatenate([imerg_grid, imerg_data_], axis=0)

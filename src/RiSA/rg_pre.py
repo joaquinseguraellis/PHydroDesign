@@ -7,9 +7,9 @@ This module is made to process rainfall data.
 import os, csv
 import xlrd
 import openpyxl
+import tqdm
 
 from pathlib import Path
-from tqdm import tqdm
 
 from .basics import *
 from .hydro_tools import *
@@ -212,7 +212,7 @@ def daily_prec(time, prec):
         datetime.timedelta(days=1),
     ).astype(datetime.datetime)
     prec_ = np.zeros((time_.shape[0]))
-    for i, t in tqdm(enumerate(time)):
+    for i, t in tqdm.tqdm(enumerate(time)):
         if t < datetime.datetime(t.year, t.month, t.day, 9, 0):
             prec_[list(time_).index(datetime.datetime(t.year, t.month, t.day, 9, 0))] += prec[i]
         else:
