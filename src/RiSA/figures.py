@@ -402,7 +402,7 @@ def plot_station_imerg(
         ax.set_ylim(0, 100)
         ax.set_ylabel('Precipitación Acumulada Diaria (mm)')
         ax.grid(alpha=0.5)
-        ax.legend(loc=5, ncols=1, shadow=True)
+        ax.legend(loc=1, ncols=1, shadow=True)
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
 
