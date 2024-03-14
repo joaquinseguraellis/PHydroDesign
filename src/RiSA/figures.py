@@ -387,11 +387,10 @@ def plot_station_imerg(
     if not os.path.exists(save_path):
         y = [data, data_e, data_l, data_f]
         ls = ['solid', 'dashed', 'dashdot', 'dotted']
-        color = ['black', 'pink', 'lightblue', 'lightgreen']
+        color = ['black', 'red', 'blue', 'green']
         label = [name, 'IMERG-E', 'IMERG-L', 'IMERG-F']
-        fig = plt.figure(figsize=(6, 6), dpi=300)
+        fig = plt.figure(figsize=(10, 6), dpi=300)
         ax = fig.add_subplot(1, 1, 1)
-        ax.plot([0, 100], [0, 100], lw=1, c='black')
         img = [ax.plot(
             dt, y[i], zorder=2, linestyle=ls[i], lw=1,
             c=color[i], label=label[i],
