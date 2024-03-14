@@ -13,6 +13,12 @@ import numpy as np
 
 # Functions
 
+def dropnan(data):
+    """
+    
+    """
+    return data[~np.isnan(data)]
+
 def test_code(f):
     """
     Tool for testing a function.
