@@ -386,7 +386,7 @@ def plot_station_imerg(
     """
     if not os.path.exists(save_path):
         y = [data, data_e, data_l, data_f]
-        ls = ['-', '--', '-.', '.']
+        ls = ['solid', 'dashed', 'dashdot', 'dotted']
         color = ['black', 'pink', 'lightblue', 'lightgreen']
         label = [name, 'IMERG-E', 'IMERG-L', 'IMERG-F']
         fig = plt.figure(figsize=(6, 6), dpi=300)
