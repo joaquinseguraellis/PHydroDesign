@@ -373,7 +373,36 @@ def scatter_station_imerg(
         ax.set_ylim(0, 100)
         ax.set_xlabel('Precipitación Acumulada Diaria de IMERG (mm)')
         ax.set_ylabel(f'Precipitación Acumulada Diaria de "{name}" (mm)')
-        plt.grid(alpha=0.5)
+        ax.grid(alpha=0.5)
+        ax.legend(loc=5, ncols=1, shadow=True)
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close()
+
+def plot_station_imerg(
+        dt, data, data_e, data_l, data_f, name, save_path,
+    ):
+    """
+    
+    """
+    if not os.path.exists(save_path):
+        y = [data, data_e, data_l, data_f]
+        ls = ['-', '--', '-.', '.']
+        color = ['black', 'pink', 'lightblue', 'lightgreen']
+        label = [name, 'IMERG-E', 'IMERG-L', 'IMERG-F']
+        fig = plt.figure(figsize=(6, 6), dpi=300)
+        ax = fig.add_subplot(1, 1, 1)
+        ax.plot([0, 100], [0, 100], lw=1, c='black')
+        img = [ax.plot(
+            dt, y[i], zorder=2, linestyle=ls[i], lw=1,
+            c=color[i], label=label[i],
+        ) for i in range(4)]
+        ax.set_xlim(
+            datetime.datetime(dt[0].year, 1, 1),
+            datetime.datetime(dt[-1].year + 1, 1, 1),
+        )
+        ax.set_ylim(0, 100)
+        ax.set_ylabel('Precipitación Acumulada Diaria (mm)')
+        ax.grid(alpha=0.5)
         ax.legend(loc=5, ncols=1, shadow=True)
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
