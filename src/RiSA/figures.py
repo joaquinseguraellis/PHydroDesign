@@ -654,7 +654,7 @@ def map_imerg_test(
             'No verifica homog./tend.',
         ]
         labels = [
-            f'{np.sum(result == i) / np.sum(~np.isnan(result)):.0f}% {_}'
+            f'{100 * np.sum(result == i) / np.sum(~np.isnan(result)):.0f}% {_}'
             for i, _ in enumerate(labels)
         ]
         cmap = matplotlib.colors.ListedColormap(colors)
