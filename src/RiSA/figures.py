@@ -616,13 +616,13 @@ def map_imerg_test(
     """
     if not os.path.exists(save_path):
         result = np.zeros((lat_grid.shape[0], lon_grid.shape[0]))
-        result[~cond_iWW * ~cond_hPE * ~cond_tMK] = 2
-        result[~cond_iWW *  cond_hPE *  cond_tMK] = 3
-        result[ cond_iWW *  cond_hPE * ~cond_tMK] = 4
-        result[ cond_iWW * ~cond_hPE *  cond_tMK] = 5
-        result[~cond_iWW * ~cond_hPE *  cond_tMK] = 6
-        result[~cond_iWW *  cond_hPE * ~cond_tMK] = 7
-        result[ cond_iWW * ~cond_hPE * ~cond_tMK] = 8
+        result[~cond_iWW * ~cond_hPE * ~cond_tMK] = 1
+        result[~cond_iWW *  cond_hPE *  cond_tMK] = 2
+        result[ cond_iWW *  cond_hPE * ~cond_tMK] = 3
+        result[ cond_iWW * ~cond_hPE *  cond_tMK] = 4
+        result[~cond_iWW * ~cond_hPE *  cond_tMK] = 5
+        result[~cond_iWW *  cond_hPE * ~cond_tMK] = 6
+        result[ cond_iWW * ~cond_hPE * ~cond_tMK] = 7
         result = shp_mask(
             result,
             rasterio.transform.Affine(
@@ -644,14 +644,18 @@ def map_imerg_test(
             ) for i, c in enumerate(colors)
         ]
         labels = [
-            r'Verifica',
-            r'No verifica',
-            r'No verifica independencia',
-            r'No verifica tendencia',
-            r'No verifica homogeneidad',
-            r'No verifica indep./homog.',
-            r'No verifica indep./tend.',
-            r'No verifica homog./tend.',
+            'Verifica',
+            'No verifica',
+            'No verifica independencia',
+            'No verifica tendencia',
+            'No verifica homogeneidad',
+            'No verifica indep./homog.',
+            'No verifica indep./tend.',
+            'No verifica homog./tend.',
+        ]
+        labels = [
+            f'{np.sum(result == i):.0f}% {_}'
+            for i, _ in enumerate(labels)
         ]
         cmap = matplotlib.colors.ListedColormap(colors)
         norm = matplotlib.colors.BoundaryNorm(
@@ -677,7 +681,6 @@ def map_imerg_test(
             handles, labels, loc=(0.60, 0.21), ncols=1,
             fontsize=my_map.fs, shadow=True,
             title_fontsize=my_map.fs,
-            title=r'Prueba para $\alpha = 0.05$',
         )
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
