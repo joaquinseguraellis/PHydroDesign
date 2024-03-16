@@ -119,6 +119,8 @@ def hist_information(
         x_ticks[-1] = [0, 500, 1000, 1500, 2000, 2500]
         x_lims = copy.deepcopy(x_ticks)
         x_lims[0] = bins[0]
+        x_text = copy.deepcopy(bins)
+        x_text[-1] = [0, 500, 1000, 1500, 2000, 2500]
         for i, _ in enumerate(x_labelticks[0]):
             institution[institution == _] = i
         institution = institution.astype(int)
@@ -133,8 +135,10 @@ def hist_information(
         fig = plt.figure(figsize=(8, 8), dpi=300)
         axs = [fig.add_subplot(2, 2, i) for i in range(1, 5)]
         for i, ax in enumerate(axs):
-            for v, alpha in zip([vars[i], vars[i][for_use]], [0.5, 1.0]):
-                ax.hist(
+            vars_ = [vars[i], vars[i][for_use]]
+            percentage = list()
+            for v, alpha in zip(vars_, [0.5, 1.0]):
+                counts, _, _ = ax.hist(
                     v,
                     bins=bins[i],
                     color=colors[i],
@@ -142,10 +146,20 @@ def hist_information(
                     align='mid',
                     alpha=alpha,
                 )
+                percentage.append(counts)
+            percentage = np.array(percentage)
+            for j, p in enumerate(percentage.T):
+                p_ = 100 * p[1] / p[0]
+                ax.text(
+                    np.mean([x_text[i][j], x_text[i][j+1]]),
+                    5 + p[0],
+                    f'{p_:.0f} %', size=8, style='oblique',
+                    c='black', rotation=0, ha='center', va='bottom',
+                )
             ax.set_title(title[i])
             ax.grid(alpha=0.5, axis='y')
             ax.set_xlim(x_lims[i][0], x_lims[i][-1])
-            ax.set_ylim(0, 160)
+            ax.set_ylim(0, 165)
             ax.set_xticks(x_ticks[i])
             ax.set_xticklabels(x_labelticks[i])
         axs[1].tick_params(labelleft = False)
