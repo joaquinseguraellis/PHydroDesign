@@ -472,7 +472,7 @@ def interpolation_method_comparison(
 
 def map_Catalini_comp(
         bbox, lon_grid, lat_grid, lon, lat,
-        prec, save_path,
+        prec, confint, save_path,
         Catalini_filepath, Catalini_stations_path,
         bounds=None, shp_path=None, elevation_mask=None,
     ):
@@ -480,8 +480,20 @@ def map_Catalini_comp(
     
     """
     vmax = 50
-    cmap = 'coolwarm'
+    colors = [
+        'black', '#1B4F72', '#2874A6', '#48C9B0', '#76D7C4', '#D1F2EB',
+        '#F6DDCC', '#E59866', '#DC7633', '#C0392B', '#922B21', 'black',
+    ]
     if not os.path.exists(save_path):
+        bounds = np.array([
+            -999, -vmax, (-vmax + confint[0])/2, confint[0],
+            2*confint[0]/3, confint[0]/3,
+            0,
+            confint[1]/3, 2*confint[1]/3,
+            confint[1], (vmax + confint[1])/2, vmax, 999,
+        ])
+        cmap = matplotlib.colors.ListedColormap(colors, N=len(colors))
+        norm = matplotlib.colors.BoundaryNorm(boundaries=bounds, ncolors=len(colors))
         xc, yc, Zc = open_Catalini(Catalini_filepath)
         interp = scipy.interpolate.RegularGridInterpolator(
             (xc, yc), Zc.T, 'linear', bounds_error=False,
@@ -494,6 +506,7 @@ def map_Catalini_comp(
             lon, lat, lon_grid, lat_grid, prec,
             shp_path=shp_path, elevation_mask=elevation_mask
         )
+        z = 100 * (prec - Zc) / Zc
         lon_c, lat_c = open_stations_Catalini(Catalini_stations_path)
         if bounds is None:
             bounds = np.arange(-vmax, vmax+1, 10)
@@ -518,14 +531,23 @@ def map_Catalini_comp(
             edgecolors='black', lw=0.2,
         )
         img = my_map.ax.contourf(
-            lon_grid, lat_grid, 100 * (prec - Zc) / Zc,
-            levels=bounds, alpha=0.65, cmap=cmap, extend='both',
+            lon_grid, lat_grid, z,
+            levels=bounds[1:-1],
+            alpha=0.65, cmap=cmap, norm=norm,
+            extend='neither',
         )
-        my_map.ax.contour(
-            lon_grid, lat_grid, 100 * (prec - Zc) / Zc,
+        contour = my_map.ax.contour(
+            lon_grid, lat_grid, z,
             levels=bounds, alpha=0.7,
-            linewidths=1.2, colors='#576789', extend='both',
+            linewidths=1.2, colors='#576789', extend='neither',
         )
+        my_map.ax.clabel(contour, bounds[[0, 1, 2, 4, 5, 6, 7, 8, 10, 11, 12]], inline=True, fontsize=my_map.fs-3)
+        contour = my_map.ax.contour(
+            lon_grid, lat_grid, z,
+            levels=bounds[[0, 3, 9, 12]], alpha=0.7,
+            linewidths=1.2, colors='black', extend='neither',
+        )
+        my_map.ax.clabel(contour, bounds[[3, 9]], inline=True, fontsize=my_map.fs-3)
         cax, kw = matplotlib.colorbar.make_axes(
             my_map.ax, orientation='horizontal', location='bottom',
             fraction=0.15, pad=-0.3, shrink=0.8, aspect=40,
@@ -533,7 +555,7 @@ def map_Catalini_comp(
         )
         cb = my_map.fig.colorbar(
             img, cax=cax, boundaries=bounds,
-            spacing='uniform', ticks=bounds, **kw
+            spacing='uniform', ticks=bounds, **kw,
         )
         cb.ax.tick_params(labelsize=my_map.fs)
         cb.set_label('Diferencia (%)', fontsize=my_map.fs)
@@ -913,30 +935,41 @@ def conf_int(
     
     """
     T = [2, 5, 10, 25, 50]
+    data = np.array([
+        [
+            100 * (prec[:, j, k] - prec[:, 1, k]) / prec[:, 1, k]
+            for k in range(prec.shape[2])
+        ]
+        for j in [2, 0]
+    ])
+    meds = np.median(data, axis=1)
     if not os.path.exists(save_path):
         colors = ['lightgreen', 'pink']
         handles = [
             matplotlib.patches.Rectangle(
                 (0, 0), 1, 1,
                 edgecolor='black', lw=0.2, facecolor=c,
-            ) for i, c in enumerate(colors)
+            )
+            for c in colors
         ]
         labels = [
             'Umbral superior', 'Umbral inferior',
         ]
         fig = plt.figure(figsize=(8, 8), dpi=300)
         ax = fig.add_subplot(1, 1, 1)
-        for i, j in enumerate([2, 0]):
+        for i in range(2):
             bplot = ax.boxplot(
-                [
-                    100 * (prec[:, j, k] - prec[:, 1, k]) / prec[:, 1, k]
-                    for k in range(prec.shape[2])
-                ],
-                labels=T, notch=False,
+                data[i], labels=T, notch=False,
                 vert=True, patch_artist=True,
                 medianprops=dict(linewidth=1),
                 flierprops=dict(marker='x', alpha=0.2),
             )
+            for k, med in enumerate(meds):
+                ax.text(
+                    k + 1.28, med, f'{med:.0f}',
+                    fontsize=8, fontstyle='italic',
+                    va='center',
+                )
             for patch in bplot['boxes']:
                 patch.set_facecolor(colors[i])
         ax.set_xlabel('Periodo de retorno (años)')
@@ -948,6 +981,7 @@ def conf_int(
         )
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+    return meds
 
 def comp_variables(
         institution, lon, lat, elev, test, error, save_path,
