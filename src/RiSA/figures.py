@@ -942,7 +942,7 @@ def conf_int(
         ]
         for j in [2, 0]
     ])
-    meds = np.median(data, axis=1)
+    meds = np.median(data, axis=2)
     if not os.path.exists(save_path):
         colors = ['lightgreen', 'pink']
         handles = [
