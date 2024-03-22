@@ -838,13 +838,12 @@ def map_error(
         ])
         for i, marker in enumerate(markers):
             for j, color in enumerate(colors):
+                index = (values_ == i) * institutions[j]
                 my_map.ax.scatter(
-                    lon[(values_ == i) * institutions[j]],
-                    lat[(values_ == i) * institutions[j]],
+                    lon[index],
+                    lat[index],
                     c=color,
-                    s=100 * error_[
-                        (values_ == i) * institutions[j]
-                    ] / np.nanmax(error_),
+                    s=100 * error_[index] / np.nanmax(error_),
                     zorder=2, edgecolors='black', lw=0.2,
                     vmin=0, vmax=2, marker=marker,
                 )
@@ -1067,7 +1066,7 @@ def comp_variables(
         axs[3].tick_params(labelleft = False)
         fig.text(
             0.05, 0.5,
-            'Error porcentual absoluto medio (%)',
+            'Diferencia porcentual absoluta media (%)',
             va='center', rotation='vertical',
         )
         axs[0].legend(
