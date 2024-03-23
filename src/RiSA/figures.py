@@ -1074,3 +1074,34 @@ def comp_variables(
         )
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+
+def pmp_bplot(
+        pmp, save_path
+):
+    """
+    
+    """
+    if not os.path.exists(save_path):
+        labels = ['IMERG-E', 'IMERG-L', 'IMERG-F']
+        colors = ['pink', 'lightblue', 'lightgreen']
+        fig = plt.figure(figsize=(8, 6), dpi=300)
+        ax = fig.add_subplot(1, 1, 1)
+        bplot = ax.boxplot(
+            [
+                [
+                    np.abs(100 * (_[i] - _[0]) / _[0])
+                    for _ in pmp
+                ]
+                for i in range(1, 4)
+            ],
+            labels=labels, notch=False,
+            vert=True, patch_artist=True,
+            medianprops=dict(linewidth=1),
+            flierprops=dict(marker='x', alpha=0.2),
+        )
+        for i, patch in enumerate(bplot['boxes']):
+            patch.set_facecolor(colors[i])
+        ax.grid(alpha=0.5, axis='y')
+        ax.set_ylabel('Diferencia porcentual absoluta (%)')
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close()
