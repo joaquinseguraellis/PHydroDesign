@@ -1006,9 +1006,6 @@ def comp_variables(
             institution[institution == _] = i
         institution = institution.astype(int)
         vars = [institution, lon, lat, elev]
-        colors = [
-            'pink', 'lightblue', 'lightgreen', 'wheat',
-        ]
         title = [
             'Fuente de información', 'Longitud',
             'Latitud', 'Elevación (msnm)',
@@ -1062,8 +1059,8 @@ def comp_variables(
                 ax.set_ylim(-5, 105)
                 ax.set_xticks(x_ticks[i])
                 ax.set_xticklabels(x_labelticks[i])
-        axs[1].tick_params(labelleft = False)
-        axs[3].tick_params(labelleft = False)
+        axs[1].tick_params(labelleft=False)
+        axs[3].tick_params(labelleft=False)
         fig.text(
             0.05, 0.5,
             'Diferencia porcentual absoluta media (%)',
