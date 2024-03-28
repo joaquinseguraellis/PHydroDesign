@@ -10,6 +10,8 @@ import matplotlib
 
 from .geo_tools import *
 
+DPI = 200
+
 # Functions
 
 def tests_examples(
@@ -38,7 +40,7 @@ def tests_examples(
             ]),
             np.arange(N) + 70,
         ]
-        fig = plt.figure(figsize=(8, 3), dpi=300)
+        fig = plt.figure(figsize=(8, 3), dpi=DPI)
         axs = [fig.add_subplot(1, 3, i) for i in range(1, 4)]
         for i, ax in enumerate(axs):
             ax.plot(
@@ -77,7 +79,7 @@ def map_station_institution(
             ) for color in colors
         ]
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.ax.add_image(
             cartopy.io.img_tiles.GoogleTiles(style='satellite'), 7
@@ -132,7 +134,7 @@ def hist_information(
             'Fuente de información', 'Longitud',
             'Latitud', 'Elevación (msnm)',
         ]
-        fig = plt.figure(figsize=(8, 8), dpi=300)
+        fig = plt.figure(figsize=(8, 8), dpi=DPI)
         axs = [fig.add_subplot(2, 2, i) for i in range(1, 5)]
         for i, ax in enumerate(axs):
             vars_ = [vars[i], vars[i][for_use]]
@@ -188,7 +190,7 @@ def map_start_month(
         cmap = matplotlib.colors.ListedColormap(colors)
         bounds = np.arange(0.5, 13, 1)
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.ax.add_image(
             cartopy.io.img_tiles.GoogleTiles(style='satellite'), 7,
@@ -271,7 +273,7 @@ def map_station_test(
         ]
         mk = 5
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.ax.add_image(
             cartopy.io.img_tiles.GoogleTiles(style='satellite'), 7,
@@ -325,7 +327,7 @@ def map_prec(
             boundaries=bounds[1:-1], ncolors=len(bounds)-1, extend='both',
         )
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.ax.add_image(
             cartopy.io.img_tiles.GoogleTiles(style='satellite'), 7,
@@ -375,7 +377,7 @@ def scatter_station_imerg(
         mk = 5
         color = ['pink', 'lightblue', 'lightgreen']
         label = ['IMERG-E', 'IMERG-L', 'IMERG-F']
-        fig = plt.figure(figsize=(6, 6), dpi=300)
+        fig = plt.figure(figsize=(6, 6), dpi=DPI)
         ax = fig.add_subplot(1, 1, 1)
         ax.plot([0, 100], [0, 100], lw=1, c='black')
         img = [ax.plot(
@@ -403,7 +405,7 @@ def plot_station_imerg(
         ls = ['solid', 'dashed', 'dashdot', 'dotted']
         color = ['black', 'red', 'blue', 'green']
         label = [name, 'IMERG-E', 'IMERG-L', 'IMERG-F']
-        fig = plt.figure(figsize=(10, 6), dpi=300)
+        fig = plt.figure(figsize=(10, 6), dpi=DPI)
         ax = fig.add_subplot(1, 1, 1)
         img = [ax.plot(
             dt, y[i], zorder=2, linestyle=ls[i], lw=1,
@@ -447,7 +449,7 @@ def interpolation_method_comparison(
             'IMERG-E', 'IMERG-L', 'IMERG-F',
         ]
         positions = np.array([0.1, 0.25, 0.4])
-        fig = plt.figure(figsize=(8, 6), dpi=300)
+        fig = plt.figure(figsize=(8, 6), dpi=DPI)
         ax = fig.add_subplot(1, 1, 1)
         for i, k_ in enumerate(data_dict.keys()):
             bplot = ax.boxplot(
@@ -511,7 +513,7 @@ def map_Catalini_comp(
         if bounds is None:
             bounds = np.arange(-vmax, vmax+1, 10)
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.ax.add_image(
             cartopy.io.img_tiles.GoogleTiles(style='satellite'), 7,
@@ -600,7 +602,7 @@ def map_imerg_start_month(
             boundaries=bounds, ncolors=len(bounds) - 1, extend='neither',
         )
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.draw_limits(
             my_map.ax,
@@ -684,7 +686,7 @@ def map_imerg_test(
             boundaries=bounds, ncolors=len(bounds) - 1, extend='neither',
         )
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.draw_limits(
             my_map.ax,
@@ -740,7 +742,7 @@ def map_imerg_prec(
             boundaries=bounds[1:-1], ncolors=len(bounds)-1, extend='both',
         )
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.ax.add_image(
             cartopy.io.img_tiles.GoogleTiles(style='satellite'), 7,
@@ -817,7 +819,7 @@ def map_error(
             institutions == 'INTA', institutions == 'SNIH',
         ]
         my_map = Map(bbox=bbox, fontsize=8)
-        my_map.create_figure(dpi=300)
+        my_map.create_figure(dpi=DPI)
         my_map.set_map(my_map.ax)
         my_map.draw_limits(
             my_map.ax,
@@ -898,7 +900,7 @@ def comp_result(
         zeros = np.zeros((x.shape[0]))
         ones = np.ones((x.shape[0]))
         positions = np.array([0.1, 0.25, 0.4])
-        fig = plt.figure(figsize=(8, 6), dpi=300)
+        fig = plt.figure(figsize=(8, 6), dpi=DPI)
         ax = fig.add_subplot(1, 1, 1)
         for i in range(len(T)):
             scale = rain[:, 2, i] - rain[:, 1, i]
@@ -954,7 +956,7 @@ def conf_int(
         labels = [
             'Umbral superior', 'Umbral inferior',
         ]
-        fig = plt.figure(figsize=(8, 8), dpi=300)
+        fig = plt.figure(figsize=(8, 8), dpi=DPI)
         ax = fig.add_subplot(1, 1, 1)
         for i in range(2):
             bplot = ax.boxplot(
@@ -1031,7 +1033,7 @@ def comp_variables(
             ]
             for j, var in enumerate(vars)
         ]
-        fig = plt.figure(figsize=(8, 8), dpi=300)
+        fig = plt.figure(figsize=(8, 8), dpi=DPI)
         axs = [fig.add_subplot(2, 2, i) for i in range(1, 5)]
         for i, ax in enumerate(axs):
             widths = bins[i][1] - bins[i][0]
@@ -1081,7 +1083,7 @@ def pmp_bplot(
     if not os.path.exists(save_path):
         labels = ['IMERG-E', 'IMERG-L', 'IMERG-F']
         colors = ['pink', 'lightblue', 'lightgreen']
-        fig = plt.figure(figsize=(8, 6), dpi=300)
+        fig = plt.figure(figsize=(8, 6), dpi=DPI)
         ax = fig.add_subplot(1, 1, 1)
         bplot = ax.boxplot(
             [
