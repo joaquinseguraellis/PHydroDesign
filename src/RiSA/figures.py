@@ -568,8 +568,8 @@ def map_Catalini_comp(
         cb.ax.tick_params(labelsize=my_map.fs)
         cb.set_label('Diferencia (%)', fontsize=my_map.fs)
         labels = [
-            fr'Estaciones estudiadas ({lon.shape[0]})',
-            fr'Estaciones Catalini (2018) ({lon_c.shape[0]})',
+            r'Estaciones estudiadas',
+            r'Estaciones Catalini (2018)',
         ]
         handles = [
             matplotlib.lines.Line2D(
