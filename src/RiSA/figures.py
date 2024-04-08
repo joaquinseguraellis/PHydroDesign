@@ -543,13 +543,19 @@ def map_Catalini_comp(
             levels=bounds, alpha=0.7,
             linewidths=1.2, colors='#576789', extend='neither',
         )
-        my_map.ax.clabel(contour, bounds[[0, 1, 2, 4, 5, 6, 7, 8, 10, 11, 12]], inline=True, fontsize=my_map.fs-3)
+        my_map.ax.clabel(
+            contour, bounds[[0, 1, 2, 4, 5, 6, 7, 8, 10, 11, 12]],
+            inline=True, fontsize=my_map.fs-3,
+        )
         contour = my_map.ax.contour(
             lon_grid, lat_grid, z,
             levels=bounds[[0, 3, 9, 12]], alpha=0.7,
             linewidths=1.2, colors='black', extend='neither',
         )
-        my_map.ax.clabel(contour, bounds[[3, 9]], inline=True, fontsize=my_map.fs-3)
+        my_map.ax.clabel(
+            contour, bounds[[3, 9]],
+            inline=True, fontsize=my_map.fs-3,
+        )
         cax, kw = matplotlib.colorbar.make_axes(
             my_map.ax, orientation='horizontal', location='bottom',
             fraction=0.15, pad=-0.3, shrink=0.8, aspect=40,
@@ -561,7 +567,10 @@ def map_Catalini_comp(
         )
         cb.ax.tick_params(labelsize=my_map.fs)
         cb.set_label('Diferencia (%)', fontsize=my_map.fs)
-        labels = [r'Estaciones estudiadas', r'Estaciones Catalini (2018)']
+        labels = [
+            fr'Estaciones estudiadas ({lon.shape[0]})',
+            fr'Estaciones Catalini (2018) ({lon_c.shape[0]})',
+        ]
         handles = [
             matplotlib.lines.Line2D(
                 [0], [0], linestyle='', marker='o',
@@ -574,6 +583,7 @@ def map_Catalini_comp(
         )
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
+        print(save_path, np.nansum([(z > confint[0]) * (z < confint[1])]) / (z.shape[0] * z.shape[1]))
 
 def map_imerg_start_month(
         bbox, lon_grid, lat_grid, sm, save_path, shp_path, elevation_mask
@@ -1102,5 +1112,114 @@ def pmp_bplot(
             patch.set_facecolor(colors[i])
         ax.grid(alpha=0.5, axis='y')
         ax.set_ylabel('Diferencia porcentual absoluta (%)')
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close()
+
+def comp_full_station(
+        ids: list, save_path, stations, stations_dir, period
+):
+    """
+    
+    """
+    if not os.path.exists(save_path):
+        fs = 12
+        ind_k = 'Y_rx1day'
+        T = np.arange(2, 51)
+        T_ = np.arange(10, 51, 10)
+        colors = [
+            'black', 'gold', 'red', 'blue', 'green',
+        ]
+        markers = ['D', 'v', '^', 'o', 's']
+        markersize = 3
+        handles = [
+            matplotlib.lines.Line2D(
+                [0], [0], color=colors[i], linestyle='-',
+                marker=markers[i],
+                markeredgecolor='black', markeredgewidth=0.2,
+                markerfacecolor=colors[i], markersize=6,
+            )
+            for i in range(len(colors))
+        ]
+        labels = [
+            r'Terreno (Serie completa)',
+            r'Terreno (Coincidente en el tiempo con IMERG)',
+            r'IMERG-E', r'IMERG-L', r'IMERG-F',
+        ]
+        nrows = int(np.ceil(len(ids) / 2))
+        print(nrows, 5 * nrows + 2)
+        ncols = 2
+        fig = plt.figure(figsize=(4 * ncols + 2, 3 * nrows + 2), dpi=300)
+        axs = [fig.add_subplot(nrows, ncols, i) for i in range(1, len(ids) + 1)]
+        print(len(axs))
+        i = 0
+        for _ in stations:
+            if _[0].id in ids:
+                station = Rain_Gauge()
+                station.load(Path(stations_dir, f'{_[0].file}.csv'))
+                station.file = _[0].name
+                station.period = period
+                station.result = dict()
+                station.rxDday_calc(1)
+                station.sorted_max_calc()
+                station = frequency_analysis(station, replace=1)
+                print(station.result['Y_rx1day']['data_outliers_tests'])
+                axs[i].set_title(
+                    f'{station.name}, {station.province} ({station.institution})\nElevación: {int(station.elevation)} msnm',
+                    fontsize=fs,
+                )
+                ln = station.result[ind_k]['lognorm'].ppf(T)
+                axs[i].plot(
+                    T, ln[0], c=colors[0], ls='--', lw=1,
+                )
+                axs[i].plot(
+                    T, ln[1], c=colors[0], ls='-', lw=1,
+                )
+                axs[i].plot(
+                    T_, station.result[ind_k]['lognorm'].ppf(T_)[1],
+                    c=colors[0], ls='',
+                    marker=markers[0], markersize=markersize,
+                    markeredgecolor='black', markeredgewidth=0.2,
+                )
+                axs[i].plot(
+                    T, ln[2], c=colors[0], ls='--', lw=1,
+                )
+                for j in range(len(_)):
+                    ln = _[j].result[ind_k]['lognorm'].ppf(T)
+                    if j == 0:
+                        for ci in [0, 2]:
+                            axs[i].plot(
+                                T, ln[ci], c=colors[j+1], ls='-.', lw=1,
+                            )
+                    axs[i].plot(
+                        T, ln[1], c=colors[j+1], ls='-', lw=1,
+                    )
+                    axs[i].plot(
+                        T_, _[j].result[ind_k]['lognorm'].ppf(T_)[1],
+                        c=colors[j+1], ls='',
+                        marker=markers[j+1], markersize=markersize,
+                        markeredgecolor='black', markeredgewidth=0.2,
+                    )
+                axs[i].set_xlim(2, 50)
+                axs[i].grid(alpha=0.5)
+                if i < (nrows-1)*2:
+                    axs[i].tick_params(labelbottom=False)
+                i += 1
+        fig.text(
+            0.07, 0.5, 'Precipitación Máxima Diaria Anual (mm)',
+            va='center', rotation='vertical', fontsize=fs,
+        )
+        fig.text(
+            0.5, 0.07, 'Periodo de Retorno (años)',
+            ha='center', rotation='horizontal', fontsize=fs,
+        )
+        if i%2 == 0:
+            i -= 2
+        else:
+            i -= 1
+        axs[i].legend(
+            handles[2:] + handles[:2], labels[2:] + labels[:2],
+            loc=(0.50, -0.55), ncols=2, shadow=True,
+        )
+        fig.subplots_adjust(hspace=0.30, wspace=0.15)
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
