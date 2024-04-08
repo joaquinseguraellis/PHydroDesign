@@ -583,7 +583,7 @@ def map_Catalini_comp(
         )
         plt.savefig(save_path, bbox_inches='tight')
         plt.close()
-        print(save_path, np.nansum([(z > confint[0]) * (z < confint[1])]) / (z.shape[0] * z.shape[1]))
+        print(save_path, np.nansum([(z > confint[0]) * (z < confint[1])]) / np.nansum(~np.isnan(z)))
 
 def map_imerg_start_month(
         bbox, lon_grid, lat_grid, sm, save_path, shp_path, elevation_mask
