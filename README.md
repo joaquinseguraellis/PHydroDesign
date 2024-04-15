@@ -4,7 +4,7 @@ A Python Code library for Hydrological Design
 This library has several tools for statistical analysis of rainfall series.  
 # How to install
 ```
-pip install --user --upgrade --force-reinstall "git+https://github.com/joaquinseguraellis/PydroDesign.git"
+pip install --user --upgrade --force-reinstall "git+https://github.com/joaquinseguraellis/PHydroDesign.git"
 ```
 # Example
 Here is an example of the results when comparing rain gauge with IMERG rainfall estimates:
