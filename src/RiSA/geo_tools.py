@@ -35,6 +35,7 @@ from .masks import *
 
 # Global variables
 
+COUNTIES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_2_counties.shp')
 PROVINCES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_1_states_provinces.shp')
 COUNTRIES_SHP_PATH = pkg_resources.resource_filename('RiSA', 'data/shp/ne_10m_admin_0_countries.shp')
 
