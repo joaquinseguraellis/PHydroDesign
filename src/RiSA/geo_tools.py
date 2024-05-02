@@ -427,29 +427,27 @@ class Map:
         )
 
     def set_map(
-            self, ax, df=0, grid_step=2,
+            self, ax, df=0, xlocs=None, ylocs=None,
     ):
         ax.set_extent([
             self.bbox[0] - df, self.bbox[1] + df,
             self.bbox[2] - df, self.bbox[3] + df,
         ], crs=self.projection_crs)
-        if grid_step is not None:
-            grid_step = np.min([int(self.width / 5), int(self.height / 5)])
+        grid_step = np.min([int(self.width / 5), int(self.height / 5)])
         if grid_step == 0:
             grid_step = 2
+        if xlocs is not None:
+            xlocs = np.arange(
+                int(self.bbox[0] - df), int(self.bbox[1] + df), grid_step,
+            )
+        if ylocs is not None:
+            ylocs = np.arange(
+                int(self.bbox[2] - df), int(self.bbox[3] + df), grid_step,
+            )
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5,
             linestyle='--', alpha=0.7, dms=True,
-            xlocs=np.arange(
-                int(self.bbox[0] - df),
-                int(self.bbox[1] + df),
-                grid_step,
-            ),
-            ylocs=np.arange(
-                int(self.bbox[2] - df),
-                int(self.bbox[3] + df),
-                grid_step,
-            ),
+            xlocs=xlocs, ylocs=ylocs,
         )
         gl.xlabel_style = {'size': self.fs}
         gl.ylabel_style = {'size': self.fs}
