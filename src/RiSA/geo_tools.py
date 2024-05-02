@@ -426,14 +426,17 @@ class Map:
             ha='center', va='top',
         )
 
-    def set_map(self, ax, df=0):
+    def set_map(
+            self, ax, df=0, grid_step=2,
+    ):
         ax.set_extent([
             self.bbox[0] - df, self.bbox[1] + df,
             self.bbox[2] - df, self.bbox[3] + df,
         ], crs=self.projection_crs)
-        grid_step = np.min([int(self.width / 5), int(self.height / 5)])
+        if grid_step is not None:
+            grid_step = np.min([int(self.width / 5), int(self.height / 5)])
         if grid_step == 0:
-            grid_step = 3
+            grid_step = 2
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5,
             linestyle='--', alpha=0.7, dms=True,
