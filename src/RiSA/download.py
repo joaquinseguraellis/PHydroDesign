@@ -20,7 +20,7 @@ from subprocess import Popen
 
 def download_credentials(urs, username, password):
     """
-    Credentials for downloading from IMERG
+    Credentials for downloading from Earth Data
     """
     homeDir = os.path.expanduser("~") + os.sep
     with open(homeDir + '.netrc', 'w') as file:

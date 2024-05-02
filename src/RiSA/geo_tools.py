@@ -433,7 +433,7 @@ class Map:
         ], crs=self.projection_crs)
         grid_step = np.min([int(self.width / 5), int(self.height / 5)])
         if grid_step == 0:
-            grid_step = 2
+            grid_step = 3
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5,
             linestyle='--', alpha=0.7, dms=True,
