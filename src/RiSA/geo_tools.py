@@ -436,11 +436,11 @@ class Map:
         grid_step = np.min([int(self.width / 5), int(self.height / 5)])
         if grid_step == 0:
             grid_step = 2
-        if xlocs is not None:
+        if xlocs is None:
             xlocs = np.arange(
                 int(self.bbox[0] - df), int(self.bbox[1] + df), grid_step,
             )
-        if ylocs is not None:
+        if ylocs is None:
             ylocs = np.arange(
                 int(self.bbox[2] - df), int(self.bbox[3] + df), grid_step,
             )
