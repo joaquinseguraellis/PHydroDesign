@@ -446,7 +446,7 @@ class Map:
             )
         gl = ax.gridlines(
             draw_labels=True, linewidth=0.5,
-            linestyle='--', alpha=0.7, dms=True,
+            linestyle='--', alpha=0.7,
             xlocs=xlocs, ylocs=ylocs,
         )
         gl.xlabel_style = {'size': self.fs}
