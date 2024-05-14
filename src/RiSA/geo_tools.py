@@ -13,6 +13,7 @@ import pkg_resources
 import datetime
 import copy
 import tqdm
+import pyproj
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
@@ -22,11 +23,13 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import cartopy.io.img_tiles
 import xarray as xr
+import shapely.geometry as sg
 
 from global_land_mask import globe
 from osgeo import gdal
 from osgeo import ogr
 from pathlib import Path
+from shapely.ops import unary_union, transform
 
 from .hydro_tools import *
 from .frequency_analysis import *
@@ -379,6 +382,55 @@ def get_kriging_prec(
         return np.ma.masked_array(prec_interp, elevation_mask)
     else:
         return prec_interp
+    
+def open_polygon(directory, shape_file, obj_proj='EPSG:4326'):
+    """
+    Open a shapefile, change its projection to 
+    EPSG:4326 and apply a union to all polygons that are in it.
+
+    Parameters
+    ----------
+    directory : string or pathlib path.
+        Directory where shapefile is located.
+    shape_file : string.
+        Name of files corresponding to the shapefile and its metadata.
+        All file must be named as this.
+    obj_proj : string.
+        Objetive projection of data.
+
+    Returns
+    -------
+    shapely.geometry.polygon.Polygon
+        Polygon object from shapely library.
+
+    Examples
+    --------
+    If we want to retrieve a unified polygon from a shapefile:
+
+    >>> from pathlib import Path
+    >>> from shapely.ops import unary_union, transform
+    >>> from shapely.plotting import plot_polygon
+    >>> import shapely.geometry as sg
+    >>> import pyproj
+    >>> import shapefile
+
+    >>> directory = 'My_Directory'
+    >>> shape_file = 'My_Shape'
+
+    >>> polygon = open_polygon(directory, shape_file)
+    >>> print(type(polygon))
+    >>> plot_polygon(polygon)
+
+    """
+    with open(Path(directory, f'{shape_file}.prj'), 'r') as prj_file:
+        wkt = prj_file.read()
+    basin_proj = pyproj.CRS.from_wkt(wkt)
+    wgs84 = pyproj.CRS(obj_proj)
+    project = pyproj.Transformer.from_crs(basin_proj, wgs84, always_xy=True).transform
+    with shapefile.Reader(Path(directory, f'{shape_file}.shp')) as shape:
+        geoms = [sg.shape(shape.shapeRecords()[i].shape.__geo_interface__) for i in range(len(shape.shapeRecords()))]
+        basin = transform(project, unary_union(geoms))
+    return basin
 
 # Classes
 

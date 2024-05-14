@@ -114,7 +114,9 @@ def csv_INTA(main_dir, save_dir):
 Sistema Nacional de Información Hídrica (SNIH). Information downloaded from its URL.
 URL: https://snih.hidricosargentina.gob.ar/Inicio.aspx
 """
-def get_SNIH_prec(path):
+def get_SNIH_prec(
+        path: Path,
+):
     """
     This function opens SNIH .xlsx files and returns time and precipitation data.
     """
