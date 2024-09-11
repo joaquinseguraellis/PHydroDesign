@@ -55,7 +55,7 @@ def bin_file(
     return res
 
 def cut(
-        data: np.ndarray, x, y, bbox,
+        data: np.ndarray, x: np.ndarray, y: np.ndarray, bbox: list,
 ):
     """
     Cut a numpy.array to a bbox.
@@ -199,7 +199,7 @@ def complete_data(dt, data, delta=datetime.timedelta(days=1)):
     """
     dt_ = np.arange(
         datetime.datetime(dt[0].year, 1, 1),
-        datetime.datetime(dt[-1].year, 12, 31) + datetime.timedelta(days=1),
+        datetime.datetime(dt[-1].year, 12, 31) + delta,
         delta,
     ).astype(datetime.datetime)
     data_ = np.zeros((dt_.shape[0]))

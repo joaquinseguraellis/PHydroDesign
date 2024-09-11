@@ -383,7 +383,9 @@ def get_kriging_prec(
     else:
         return prec_interp
     
-def open_polygon(directory, shape_file, obj_proj='EPSG:4326'):
+def open_polygon(
+        directory, shape_file: str, obj_proj: str='EPSG:4326',
+):
     """
     Open a shapefile, change its projection to 
     EPSG:4326 and apply a union to all polygons that are in it.
@@ -439,9 +441,8 @@ class Map:
     Basemap
     """
 
-    projection_crs = ccrs.PlateCarree()
-
     def __init__(self, bbox, fontsize=12):
+        self.projection_crs = ccrs.PlateCarree()
         self.bbox = bbox # lon1, lon2, lat1, lat2
         self.width = self.bbox[1] - self.bbox[0]
         self.height = self.bbox[3] - self.bbox[2]
@@ -497,8 +498,7 @@ class Map:
                 int(self.bbox[2] - df), int(self.bbox[3] + df), grid_step,
             )
         gl = ax.gridlines(
-            draw_labels=True, linewidth=0.5,
-            linestyle='--', alpha=0.7,
+            draw_labels=True, linewidth=0.5, linestyle='--', alpha=0.7,
             xlocs=xlocs, ylocs=ylocs,
         )
         gl.xlabel_style = {'size': self.fs}
