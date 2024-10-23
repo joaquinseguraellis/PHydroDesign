@@ -19,7 +19,7 @@ def dropnan(data):
     """
     return data[~np.isnan(data)]
 
-def test_code(f):
+def test_code(f, *args, **kwargs):
     """
     Tool for testing a function.
     """
@@ -27,7 +27,7 @@ def test_code(f):
     from pstats import SortKey
     pr = cProfile.Profile()
     pr.enable()
-    f()
+    f(*args, **kwargs)
     pr.disable()
     s = io.StringIO()
     sortby = SortKey.CUMULATIVE
